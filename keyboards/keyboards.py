@@ -18,7 +18,7 @@ def get_price_list_kb(items: dict) -> ReplyKeyboardMarkup:
     for item in items:
         keyboard.row(InlineKeyboardButton(text=item, callback_data=items[item]))
         
-    keyboard.row(b_main_menu)
+    keyboard.row(b_back)
 
     return keyboard.as_markup(resize_keyboard=True)
 

@@ -5,12 +5,15 @@ dict_names = {
         'contacts': "Контакты",
         'price_list': "Прайс-лист",
         'back': "Назад",
+        'categories': "Категории",
+        
     },
     "en" : {
         "main_menu": "Main menu",
         'contacts': "Contacts",
         'price_list': "Price list",
         'back': "Back",
+        'categories': "Categories"
     }
     
 }
