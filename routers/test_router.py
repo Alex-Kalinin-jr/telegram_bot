@@ -30,7 +30,7 @@ async def command_start(message: Message):
 async def answer_contacts(call: CallbackQuery):
     await call.message.edit_text(names['contacts'], reply_markup=get_keyboard(["back"]))
     
-    
+
 @router.callback_query(F.data == "price_list", StateFilter(default_state))
 async def answer_categories(call: CallbackQuery, db_instance: BotDB, state: FSMContext):
     data = db_instance.get_categories()
@@ -38,11 +38,11 @@ async def answer_categories(call: CallbackQuery, db_instance: BotDB, state: FSMC
     await call.message.edit_text(names['categories'], reply_markup=get_price_list_kb(data_dict))
     await state.set_state(FsmFillForm.category)
     
-    
-@router.callback_query(F.data == "categories", StateFilter(FsmFillForm.category))
+# here is not handled!!!!
+@router.callback_query(StateFilter(FsmFillForm.category))
 async def  answer_nomenclature(call: CallbackQuery, db_instance: BotDB, state: FSMContext):
     data = db_instance.get_data_by_category(call.data)
-    data_dict: dict = {i[0]: i[2] for i in data}
+    data_dict: dict = {i[2]: i[0] for i in data}
     await call.message.edit_text(names['price_list'], reply_markup=get_price_list_kb(data_dict))
     await state.set_state(FsmFillForm.nomenclature)
     
