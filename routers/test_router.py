@@ -46,6 +46,9 @@ async def answer_price(call: CallbackQuery, db_instance: BotDB, state: FSMContex
     elif state_str in [FsmFillForm.nomenclature, FsmFillForm.category_info]:
         await state.set_state(FsmFillForm.category)
         await answer_categories(call, db_instance, state)
+    elif state_str in [FsmFillForm.position_info]:
+        await state.set_state(FsmFillForm.nomenclature)
+        await answer_nomenclature(call, db_instance, state)
         
         
 @router.callback_query(F.data == "contacts", StateFilter(default_state))
@@ -68,6 +71,12 @@ async def get_category_info(call: CallbackQuery, db_instance: BotDB, state: FSMC
     await call.message.edit_text(data[0], reply_markup=get_keyboard(["back"]))
     
 
+@router.callback_query(MyCallbackFactory.filter(F.action == "get_info"), StateFilter(FsmFillForm.nomenclature))
+async def get_position_info(call: CallbackQuery, db_instance: BotDB, state: FSMContext, callback_data: MyCallbackFactory):
+    await state.set_state(FsmFillForm.position_info)
+    data = db_instance.get_description_by_position(callback_data.item_id)
+    await call.message.edit_text(data[0], reply_markup=get_keyboard(["back"]))
+
 
 @router.callback_query(F.data != "back", StateFilter(FsmFillForm.category))
 async def answer_nomenclature(call: CallbackQuery, db_instance: BotDB, state: FSMContext):
@@ -75,9 +84,7 @@ async def answer_nomenclature(call: CallbackQuery, db_instance: BotDB, state: FS
     await call.message.edit_text(names['price_list'], reply_markup=get_price_list_kb(data_dict))
     await state.set_state(FsmFillForm.nomenclature)
         
-  
-        
-    
+     
 @router.callback_query(F.data == "main_menu")
 async def answer_main_menu(call: CallbackQuery):
     await call.message.edit_text(names['main_menu'], reply_markup=get_keyboard(kb_main_menu))
