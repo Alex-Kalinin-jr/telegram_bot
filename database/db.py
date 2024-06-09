@@ -5,18 +5,17 @@ import aiosqlite
 logger = logging.getLogger(__name__)
 from data.records import records_data, images_data, categories_data
 
+
 class BotDB:
     def __init__(self, db_file):
         self.db_file = db_file
         self.conn = None
-        logger.debug("database instance created")
-
+        logger.debug("Database instance created")
 
     async def get_connection(self):
         if self.conn is None:
-            self.conn = await aiosqlite.connect(self.db_file)
-            logger.debug("database connection established")
-        return self.conn
+            self.conn = await aiosqlite.connect(self.db_file, isolation_level=None)
+        return self.conn 
 
 
     async def create_tables(self):
@@ -28,10 +27,14 @@ class BotDB:
 
     async def fill_categories_from_records_file(self):
         conn = await self.get_connection()
-        for category in categories_data:
-            print(f"category: {category}")
-            await conn.execute("INSERT INTO categories VALUES(?,?)", category)
-        await conn.commit()
+        for record in records_data:
+            try:
+                await conn.execute("BEGIN")
+                images = tuple(image for image in images_data if image[0] == record[0])
+                await self.insert_record(record, images)
+                await conn.commit()
+            except Exception as e:
+                await conn.rollback()
 
 
     async def fill_data_from_records_file(self):
@@ -58,15 +61,13 @@ class BotDB:
         rows = await cursor.fetchall()
         return rows
        
-# here the error here the error here the error here the error
-# here the error here the error here the error here the error
-# here the error here the error here the error here the error
+
     async def get_data_by_category(self, category) -> list:
         conn = await self.get_connection()
+        logger.debug(f" \n\n****\n\n: categorytype {type(category)}\n\n****\n\n")
         cursor = await conn.execute("""SELECT id, position from data WHERE category = ?""", (category,))
         rows = await cursor.fetchall()
         return rows
-    
     
 
     async def get_description_by_category(self, category) -> str:

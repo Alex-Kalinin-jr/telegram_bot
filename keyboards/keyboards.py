@@ -25,7 +25,7 @@ def get_price_list_kb(items: dict) -> ReplyKeyboardMarkup:
             InlineKeyboardButton(text=item, callback_data=items[item]),
             InlineKeyboardButton(text=BUTTONS_DICT['get_infro'],
                                  callback_data=MyCallbackFactory(action="get_info", item_id=items[item]).pack()
-                                 ))
+        ))
         
     keyboard.row(b_back)
 

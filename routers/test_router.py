@@ -1,6 +1,4 @@
 import logging
-import requests
-import json
 import os
 
 from aiogram.filters import Command, CommandStart, StateFilter
@@ -89,7 +87,7 @@ async def get_category_info(call: CallbackQuery, db_instance: BotDB,
                             state: FSMContext, callback_data: MyCallbackFactory):
     try:
         await state.set_state(FsmFillForm.category_info)
-        data = db_instance.get_description_by_category(callback_data.item_id)
+        data = await db_instance.get_description_by_category(callback_data.item_id)
         await call.message.edit_text(data[0], reply_markup=get_keyboard(["back"]))
     except TelegramBadRequest as e:
         logger.error(f"command_start_replace - error was detected: {e}")
@@ -97,10 +95,8 @@ async def get_category_info(call: CallbackQuery, db_instance: BotDB,
 
 @router.callback_query(StateFilter(FsmFillForm.nomenclature))
 async def get_position_info(call: CallbackQuery, db_instance: BotDB):
-    logger.debug(f"**\n**\n**\n{call.data}\n**\n**\n**")
     data_description = await db_instance.get_description_by_position(call.data)
     data = await db_instance.get_position_photos(call.data)
-    logger.debug(f"**\n**\n**\n{data}\n**\n**\n**")
     path = os.getcwd()
 
     try:
@@ -111,10 +107,10 @@ async def get_position_info(call: CallbackQuery, db_instance: BotDB):
             photo = FSInputFile(file_path, filename="image")
             await call.message.answer_photo(photo)
 
-        category = db_instance.get_category_by_id(call.data)
+        category = await db_instance.get_category_by_id(call.data)
         keyboard_data = await db_instance.get_data_by_category(category)
         data_dict: dict = {i[1]: i[0] for i in keyboard_data}
-        await call.message.answer(data_description[0], reply_markup=get_positions_kb(data_dict))
+        await call.message.answer(data_description, reply_markup=get_positions_kb(data_dict))
 
     except TelegramBadRequest as e:
         logger.error(f"command_start_replace - error was detected: {e}")
