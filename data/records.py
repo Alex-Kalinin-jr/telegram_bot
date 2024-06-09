@@ -11,3 +11,8 @@ images_data = [
     ("oak_1.jpeg"),
     ("oak_2.jpeg"),
 ]
+
+categories_data = [
+    ("category 1", "this is description for category 1"),
+    ("category 2", "this is description for category 2"),
+]

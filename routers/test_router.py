@@ -11,6 +11,8 @@ from keyboards.keyboards import get_price_list_kb, get_keyboard
 from data.button_name import kb_main_menu
 from utils.utils import get_language
 from database.db import BotDB
+from keyboards.keyboards import MyCallbackFactory
+
 
 logger = logging.getLogger(__name__)
 router = Router()
@@ -21,6 +23,12 @@ class FsmFillForm(StatesGroup):
     nomenclature = State()
     certain_position = State()
     contacts = State()
+    category_info = State()
+    position_info = State()
+
+
+async def command_start_replace(message: Message):
+    await message.edit_text(f'Hi {message.from_user.full_name}!', reply_markup=get_keyboard(kb_main_menu))
 
 
 @router.message(CommandStart(), StateFilter(default_state))
@@ -28,6 +36,18 @@ async def command_start(message: Message):
     await message.answer(f'Hi {message.from_user.full_name}!', reply_markup=get_keyboard(kb_main_menu))
     
     
+@router.callback_query(F.data == "back")
+async def answer_price(call: CallbackQuery, db_instance: BotDB, state: FSMContext):
+    state_str = await state.get_state()
+    
+    if state_str in [FsmFillForm.category, FsmFillForm.contacts]:
+        await state.clear()
+        await command_start_replace(call.message)
+    elif state_str in [FsmFillForm.nomenclature, FsmFillForm.category_info]:
+        await state.set_state(FsmFillForm.category)
+        await answer_categories(call, db_instance, state)
+        
+        
 @router.callback_query(F.data == "contacts", StateFilter(default_state))
 async def answer_contacts(call: CallbackQuery, state: FSMContext):
     await state.set_state(FsmFillForm.contacts)
@@ -41,28 +61,21 @@ async def answer_categories(call: CallbackQuery, db_instance: BotDB, state: FSMC
     await state.set_state(FsmFillForm.category)
     
 
+@router.callback_query(MyCallbackFactory.filter(F.action == "get_info"), StateFilter(FsmFillForm.category))
+async def get_category_info(call: CallbackQuery, db_instance: BotDB, state: FSMContext, callback_data: MyCallbackFactory):
+    await state.set_state(FsmFillForm.category_info)
+    data = db_instance.get_description_by_category(callback_data.item_id)
+    await call.message.edit_text(data[0], reply_markup=get_keyboard(["back"]))
+    
+
+
 @router.callback_query(F.data != "back", StateFilter(FsmFillForm.category))
 async def answer_nomenclature(call: CallbackQuery, db_instance: BotDB, state: FSMContext):
     data_dict: dict = {i[2]: i[0] for i in db_instance.get_data_by_category(call.data)}
     await call.message.edit_text(names['price_list'], reply_markup=get_price_list_kb(data_dict))
     await state.set_state(FsmFillForm.nomenclature)
-    
-
-# @router.callback_query(StateFilter(FsmFillForm.certain_position))
-#     async def answer_certain_position(call: CallbackQuery, state: FSMContext):
         
-
-   
-@router.callback_query(F.data == "back", ~StateFilter(default_state))
-async def answer_price(call: CallbackQuery, db_instance: BotDB, state: FSMContext):
-    state_str = await state.get_state()
-    
-    if state_str == FsmFillForm.category or state_str == FsmFillForm.contacts:
-        await state.clear()
-        await command_start(call.message)
-    elif state_str == FsmFillForm.nomenclature:
-        await state.set_state(FsmFillForm.category)
-        await answer_categories(call, db_instance, state)
+  
         
     
 @router.callback_query(F.data == "main_menu")

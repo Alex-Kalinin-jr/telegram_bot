@@ -12,7 +12,6 @@ from services.api_session import AsyncRequestSession
 from routers.test_router import router
 from database.db import BotDB
 
-
 logger = logging.getLogger(__name__)
 logging.basicConfig(
         level=logging.DEBUG,
