@@ -6,6 +6,7 @@ dict_names = {
         'price_list': "Прайс-лист",
         'back': "Назад",
         'categories': "Категории",
+        'get_infro': "Подробнее"
         
     },
     "en" : {
@@ -13,7 +14,8 @@ dict_names = {
         'contacts': "Contacts",
         'price_list': "Price list",
         'back': "Back",
-        'categories': "Categories"
+        'categories': "Categories",
+        'get_infro': "Get info"
     }
     
 }

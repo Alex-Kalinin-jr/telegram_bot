@@ -19,6 +19,7 @@ names = get_language()
 class FsmFillForm(StatesGroup):
     category = State()
     nomenclature = State()
+    certain_position = State()
 
 
 @router.message(CommandStart(), StateFilter(default_state))
@@ -33,33 +34,37 @@ async def answer_contacts(call: CallbackQuery):
 
 @router.callback_query(F.data == "price_list", StateFilter(default_state))
 async def answer_categories(call: CallbackQuery, db_instance: BotDB, state: FSMContext):
-    data = db_instance.get_categories()
-    data_dict: dict = {i[0]: i[0] for i in data}
+    data_dict: dict = {i[0]: i[0] for i in db_instance.get_categories()}
     await call.message.edit_text(names['categories'], reply_markup=get_price_list_kb(data_dict))
     await state.set_state(FsmFillForm.category)
     
-# here is not handled!!!!
-@router.callback_query(StateFilter(FsmFillForm.category))
-async def  answer_nomenclature(call: CallbackQuery, db_instance: BotDB, state: FSMContext):
+
+@router.callback_query(F.data != "back", StateFilter(FsmFillForm.category))
+async def answer_nomenclature(call: CallbackQuery, db_instance: BotDB, state: FSMContext):
+    logger.debug(f"function call is in ANSWER_NOMENCLATURE")
     data = db_instance.get_data_by_category(call.data)
     data_dict: dict = {i[2]: i[0] for i in data}
     await call.message.edit_text(names['price_list'], reply_markup=get_price_list_kb(data_dict))
     await state.set_state(FsmFillForm.nomenclature)
     
-    
-@router.callback_query(F.data == "back", ~StateFilter(default_state))
-async def answer_price(call: CallbackQuery, state: FSMContext):
-    state = await state.get_state()
-    
-    if state == FsmFillForm.category:
-        await state.clear()
-        keyboard = get_keyboard(kb_main_menu)
-    elif state == FsmFillForm.nomenclature:
-        await state.set_state(FsmFillForm.category)
-        categories = {} # there should be a list of categories from db
-        keyboard = get_keyboard(categories)
+
+# @router.callback_query(StateFilter(FsmFillForm.certain_position))
+#     async def answer_certain_position(call: CallbackQuery, state: FSMContext):
         
-    await call.message.edit_text(names['back'], reply_markup=keyboard)
+
+   
+@router.callback_query(F.data == "back", ~StateFilter(default_state))
+async def answer_price(call: CallbackQuery, db_instance: BotDB, state: FSMContext):
+    state_str = await state.get_state()
+    
+    if state_str == FsmFillForm.category:
+        await state.clear()
+        await call.message.edit_text(names['main_menu'], reply_markup=get_keyboard(kb_main_menu))
+    elif state_str == FsmFillForm.nomenclature:
+        await state.set_state(FsmFillForm.category)
+        categories_dict: dict = {i[0]: i[0] for i in db_instance.get_categories()}
+        await call.message.edit_text(names['categories'], reply_markup=get_price_list_kb(categories_dict))
+        
     
     
 @router.callback_query(F.data == "main_menu")

@@ -16,7 +16,10 @@ def get_price_list_kb(items: dict) -> ReplyKeyboardMarkup:
     keyboard = InlineKeyboardBuilder()
 
     for item in items:
-        keyboard.row(InlineKeyboardButton(text=item, callback_data=items[item]))
+        keyboard.row(
+            InlineKeyboardButton(text=item, callback_data=items[item]),
+            InlineKeyboardButton(text=BUTTONS_DICT['get_infro'], callback_data=items[item]
+        ))
         
     keyboard.row(b_back)
 
