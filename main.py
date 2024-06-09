@@ -4,6 +4,8 @@ import logging
 import sys
 
 from aiogram import Bot, Dispatcher
+from aiogram.client.default import DefaultBotProperties
+from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
@@ -15,7 +17,8 @@ from database.db import BotDB
 logger = logging.getLogger(__name__)
 logging.basicConfig(
         level=logging.DEBUG,
-        format='%(filename)s:%(lineno)d #%(levelname)-8s [%(asctime)s] - %(name)s - %(message)s'
+        format='%(filename)s:%(lineno)d #%(levelname)-8s [%(asctime)s] - %(name)s - %(message)s',
+
 )
 
 
@@ -26,7 +29,7 @@ async def main():
     dp['db_instance'] = db_instance
     dp.include_router(router)
     
-    bot = Bot(token=BOT_TOKEN, parse_mode="HTML")
+    bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)

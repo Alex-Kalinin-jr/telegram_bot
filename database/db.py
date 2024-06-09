@@ -54,4 +54,4 @@ class BotDB:
     
     
     def get_position_photos(self, position) -> list:
-        return self.cursor.execute("""SELECT * from links WHERE position = ?""", (position,)).fetchall()
+        return self.cursor.execute("""SELECT * from links WHERE id = ?""", (position,)).fetchall()
