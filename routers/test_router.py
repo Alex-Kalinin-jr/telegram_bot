@@ -5,7 +5,7 @@ import os
 
 from aiogram.filters import Command, CommandStart, StateFilter
 from aiogram.types import Message, CallbackQuery
-from aiogram import Router, F
+from aiogram import Router, F, Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state, State, StatesGroup
 from aiogram.types import FSInputFile
@@ -34,7 +34,7 @@ async def command_start_replace(message: Message):
     await message.edit_text(f'Hi {message.from_user.full_name}!', reply_markup=get_keyboard(kb_main_menu))
 
 
-@router.message(CommandStart(), StateFilter(default_state))
+@router.message(CommandStart())
 async def command_start(message: Message):
     await message.answer(f'Hi {message.from_user.full_name}!', reply_markup=get_keyboard(kb_main_menu))
     
@@ -86,15 +86,11 @@ async def answer_nomenclature(call: CallbackQuery, db_instance: BotDB, state: FS
     data_dict: dict = {i[2]: i[0] for i in db_instance.get_data_by_category(call.data)}
     await call.message.edit_text(names['price_list'], reply_markup=get_price_list_kb(data_dict))
     await state.set_state(FsmFillForm.nomenclature)
-        
-     
-@router.callback_query(F.data == "main_menu")
-async def answer_main_menu(call: CallbackQuery):
-    await call.message.edit_text(names['main_menu'], reply_markup=get_keyboard(kb_main_menu))
     
 
 @router.callback_query(StateFilter(FsmFillForm.nomenclature))
-async def answer_position(call: CallbackQuery, db_instance: BotDB, state: FSMContext):
+async def answer_position(call: CallbackQuery, db_instance: BotDB, state: FSMContext, bot: Bot):
+    await call.message.delete_reply_markup()
     data = db_instance.get_position_photos(call.data)
     path = os.getcwd()
     for i in data:
@@ -102,6 +98,12 @@ async def answer_position(call: CallbackQuery, db_instance: BotDB, state: FSMCon
         photo = FSInputFile(file_path, filename="image")
         await call.message.answer_photo(photo)
     
+    category = db_instance.get_category_by_id(call.data)
+    data_dict: dict = {i[2]: i[0] for i in db_instance.get_data_by_category(category)}
+    await call.message.answer(names['price_list'], reply_markup=get_price_list_kb(data_dict))
+
+
 @router.callback_query()
 async def answer_default(call: CallbackQuery):
     print(call.model_dump_json(indent=4, exclude_none=True))
+

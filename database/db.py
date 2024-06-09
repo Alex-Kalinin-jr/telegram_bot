@@ -45,13 +45,17 @@ class BotDB:
         return self.cursor.execute("""SELECT * from data WHERE category = ?""", (category,)).fetchall()
     
     
+# to be refactored
     def get_description_by_category(self, category) -> str:
         return self.cursor.execute("""SELECT description from categories WHERE category = ?""", (category,)).fetchone()
     
-    
+# to be refactored
     def get_description_by_position(self, position) -> str:
         return self.cursor.execute("""SELECT description from data WHERE position = ?""", (position,)).fetchone()
     
     
     def get_position_photos(self, position) -> list:
         return self.cursor.execute("""SELECT * from links WHERE id = ?""", (position,)).fetchall()
+
+    def get_category_by_id(self, id) -> str:
+        return self.cursor.execute("""SELECT category from data WHERE id = ?""", (id,)).fetchone()[0]
