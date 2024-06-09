@@ -28,7 +28,7 @@ async def main():
     dp = Dispatcher(storage=storage)
     dp['db_instance'] = db_instance
     dp.include_router(router)
-    
+    # db_instance.fill_categories_from_records_file()
     bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     
     await bot.delete_webhook(drop_pending_updates=True)

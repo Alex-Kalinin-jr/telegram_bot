@@ -3,7 +3,7 @@ import logging
 import uuid
 
 logger = logging.getLogger(__name__)
-from data.records import records_data, images_data, categories_data, position_descriptions
+from data.records import records_data, images_data, categories_data
 
 class BotDB:
     def __init__(self, db_file):
@@ -15,25 +15,34 @@ class BotDB:
         dst = sqlite3.connect(dst_path)
         self.conn.backup(dst)
         dst.close()
-     
-     
+
+    def create_tables(self):
+        self.cursor.execute("""CREATE TABLE IF NOT EXISTS data(id text, position text, category text, description text)""")
+        self.cursor.execute("""CREATE TABLE IF NOT EXISTS links(id text, position text, img text)""")
+        self.cursor.execute("""CREATE TABLE IF NOT EXISTS categories(category text, description text)""")   
+        
+
     def fill_categories_from_records_file(self):
-        self.conn.execute("CREATE TABLE IF NOT EXISTS categories (category TEXT, description TEXT)")
-        self.cursor.executemany("INSERT INTO categories VALUES(?,?)", categories_data)
+        for category in categories_data:
+            print(f"category: {category}")
+            self.cursor.execute("INSERT INTO categories VALUES(?,?)", category)
         self.conn.commit()
-        
-        
+
+
     def fill_data_from_records_file(self):
-        self.conn.execute("CREATE TABLE IF NOT EXISTS position_descriptions (position TEXT, description TEXT)")
-        self.cursor.executemany("INSERT INTO data VALUES(?, ?)", records_data)
-        self.conn.commit()
+            for record in records_data:
+                images = tuple(image for image in images_data if image[0] == record[0])
+                print(f"images: {images}")
+                self.insert_record(record, images)
         
         
     def insert_record(self, table_one_data, table_two_data):
         id = str(uuid.uuid4())
-        self.cursor.execute("INSERT INTO data VALUES(?,?,?)", id, table_one_data)
+        data = (id,) + table_one_data
+        self.cursor.execute("INSERT INTO data VALUES(?,?,?,?)", data)
         for img in table_two_data:
-            self.cursor.execute("INSERT INTO links VALUES(?,?)", id, img)
+            data = (id,) + img
+            self.cursor.execute("INSERT INTO links VALUES(?,?,?)", data)
         self.conn.commit()
         
     
@@ -42,7 +51,7 @@ class BotDB:
     
     
     def get_data_by_category(self, category) -> list:
-        return self.cursor.execute("""SELECT * from data WHERE category = ?""", (category,)).fetchall()
+        return self.cursor.execute("""SELECT id, position from data WHERE category = ?""", (category,)).fetchall()
     
     
 # to be refactored
@@ -51,7 +60,7 @@ class BotDB:
     
 # to be refactored
     def get_description_by_position(self, position) -> str:
-        return self.cursor.execute("""SELECT description from data WHERE position = ?""", (position,)).fetchone()
+        return self.cursor.execute("""SELECT description from data WHERE id = ?""", (position,)).fetchone()
     
     
     def get_position_photos(self, position) -> list:

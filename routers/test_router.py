@@ -10,7 +10,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state, State, StatesGroup
 from aiogram.types import FSInputFile
 
-from keyboards.keyboards import get_price_list_kb, get_keyboard
+from keyboards.keyboards import get_price_list_kb, get_keyboard, get_positions_kb
 from data.button_name import kb_main_menu
 from utils.utils import get_language
 from database.db import BotDB
@@ -35,7 +35,8 @@ async def command_start_replace(message: Message):
 
 
 @router.message(CommandStart())
-async def command_start(message: Message):
+async def command_start(message: Message, state: FSMContext):
+    await state.clear()
     await message.answer(f'Hi {message.from_user.full_name}!', reply_markup=get_keyboard(kb_main_menu))
     
     
@@ -46,7 +47,7 @@ async def answer_price(call: CallbackQuery, db_instance: BotDB, state: FSMContex
     if state_str in [FsmFillForm.category, FsmFillForm.contacts]:
         await state.clear()
         await command_start_replace(call.message)
-    elif state_str in [FsmFillForm.nomenclature, FsmFillForm.category_info]:
+    elif state_str in [FsmFillForm.category_info, FsmFillForm.nomenclature]:
         await state.set_state(FsmFillForm.category)
         await answer_categories(call, db_instance, state)
     elif state_str in [FsmFillForm.position_info]:
@@ -63,6 +64,7 @@ async def answer_contacts(call: CallbackQuery, state: FSMContext):
 @router.callback_query(F.data == "price_list", StateFilter(default_state))
 async def answer_categories(call: CallbackQuery, db_instance: BotDB, state: FSMContext):
     data_dict: dict = {i[0]: i[0] for i in db_instance.get_categories()}
+    logger.debug(f"answer_categories: data_dict: {data_dict}")
     await call.message.edit_text(names['categories'], reply_markup=get_price_list_kb(data_dict))
     await state.set_state(FsmFillForm.category)
     
@@ -71,22 +73,28 @@ async def answer_categories(call: CallbackQuery, db_instance: BotDB, state: FSMC
 async def get_category_info(call: CallbackQuery, db_instance: BotDB, state: FSMContext, callback_data: MyCallbackFactory):
     await state.set_state(FsmFillForm.category_info)
     data = db_instance.get_description_by_category(callback_data.item_id)
+    logger.debug(f"get_category_info: data: {data}")
     await call.message.edit_text(data[0], reply_markup=get_keyboard(["back"]))
     
 
 @router.callback_query(MyCallbackFactory.filter(F.action == "get_info"), StateFilter(FsmFillForm.nomenclature))
-async def get_position_info(call: CallbackQuery, db_instance: BotDB, state: FSMContext, callback_data: MyCallbackFactory):
+async def get_position_info(call: CallbackQuery, 
+                            db_instance: BotDB, 
+                            state: FSMContext, 
+                            callback_data: MyCallbackFactory,
+                            item_id: str):
     await state.set_state(FsmFillForm.position_info)
     data = db_instance.get_description_by_position(callback_data.item_id)
+
     await call.message.edit_text(data[0], reply_markup=get_keyboard(["back"]))
 
 
 @router.callback_query(F.data != "back", StateFilter(FsmFillForm.category))
 async def answer_nomenclature(call: CallbackQuery, db_instance: BotDB, state: FSMContext):
-    data_dict: dict = {i[2]: i[0] for i in db_instance.get_data_by_category(call.data)}
-    await call.message.edit_text(names['price_list'], reply_markup=get_price_list_kb(data_dict))
+    data_dict: dict = {i[1]: i[0] for i in db_instance.get_data_by_category(call.data)}
+    await call.message.edit_text(names['price_list'], reply_markup=get_positions_kb(data_dict))
     await state.set_state(FsmFillForm.nomenclature)
-    
+
 
 @router.callback_query(StateFilter(FsmFillForm.nomenclature))
 async def answer_position(call: CallbackQuery, db_instance: BotDB, state: FSMContext, bot: Bot):
@@ -100,7 +108,7 @@ async def answer_position(call: CallbackQuery, db_instance: BotDB, state: FSMCon
     
     category = db_instance.get_category_by_id(call.data)
     data_dict: dict = {i[2]: i[0] for i in db_instance.get_data_by_category(category)}
-    await call.message.answer(names['price_list'], reply_markup=get_price_list_kb(data_dict))
+    await call.message.answer(names['price_list'], reply_markup=get_positions_kb(data_dict))
 
 
 @router.callback_query()

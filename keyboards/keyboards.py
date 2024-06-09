@@ -32,6 +32,17 @@ def get_price_list_kb(items: dict) -> ReplyKeyboardMarkup:
     return keyboard.as_markup(resize_keyboard=True)
 
 
+def get_positions_kb(items: dict) -> ReplyKeyboardMarkup:
+    keyboard = InlineKeyboardBuilder()
+
+    for item in items:
+        keyboard.row(InlineKeyboardButton(text=item, callback_data=items[item]))
+        
+    keyboard.row(b_back)
+
+    return keyboard.as_markup(resize_keyboard=True)
+
+
 def get_keyboard(keyboards: dict) -> ReplyKeyboardMarkup:
     keyboard_builder = InlineKeyboardBuilder()
     
