@@ -11,3 +11,4 @@ aiofiles==23.2.1
 pydantic==2.5.2
 cachetools==4.2.4
 requests==2.32.3
+aiosqlite==0.20.0

@@ -76,7 +76,8 @@ async def answer_contacts(call: CallbackQuery, state: FSMContext):
 @router.callback_query(F.data == "price_list", StateFilter(default_state))
 async def answer_categories(call: CallbackQuery, db_instance: BotDB, state: FSMContext):
     try:
-        data_dict: dict = {i[0]: i[0] for i in db_instance.get_categories()}
+        rows = await db_instance.get_categories()
+        data_dict: dict = {i[0]: i[0] for i in rows}
         await call.message.edit_text(names['categories'], reply_markup=get_price_list_kb(data_dict))
         await state.set_state(FsmFillForm.category)
     except TelegramBadRequest as e:
@@ -96,20 +97,23 @@ async def get_category_info(call: CallbackQuery, db_instance: BotDB,
 
 @router.callback_query(StateFilter(FsmFillForm.nomenclature))
 async def get_position_info(call: CallbackQuery, db_instance: BotDB):
-    data_description = db_instance.get_description_by_position(call.data)
-    data = db_instance.get_position_photos(call.data)
+    logger.debug(f"**\n**\n**\n{call.data}\n**\n**\n**")
+    data_description = await db_instance.get_description_by_position(call.data)
+    data = await db_instance.get_position_photos(call.data)
+    logger.debug(f"**\n**\n**\n{data}\n**\n**\n**")
     path = os.getcwd()
 
     try:
         await call.message.delete_reply_markup()
         for i in data:
-            file_path = os.path.join(path, "images", i[2])
+            file_path = os.path.join(path, "images", i[0])
             logger.debug(f"this is file path {file_path}")
             photo = FSInputFile(file_path, filename="image")
             await call.message.answer_photo(photo)
 
         category = db_instance.get_category_by_id(call.data)
-        data_dict: dict = {i[1]: i[0] for i in db_instance.get_data_by_category(category)}
+        keyboard_data = await db_instance.get_data_by_category(category)
+        data_dict: dict = {i[1]: i[0] for i in keyboard_data}
         await call.message.answer(data_description[0], reply_markup=get_positions_kb(data_dict))
 
     except TelegramBadRequest as e:
@@ -118,9 +122,10 @@ async def get_position_info(call: CallbackQuery, db_instance: BotDB):
 
 @router.callback_query(F.data != "back", StateFilter(FsmFillForm.category))
 async def answer_nomenclature(call: CallbackQuery, db_instance: BotDB, state: FSMContext):
-    data_dict: dict = {i[1]: i[0] for i in db_instance.get_data_by_category(call.data)}
+    nomenclature_data: tuple = await db_instance.get_data_by_category(call.data)
+    nomenclature_data_dict: dict = {i[1]: i[0] for i in nomenclature_data}
     try:
-        await call.message.edit_text(names['price_list'], reply_markup=get_positions_kb(data_dict))
+        await call.message.edit_text(names['price_list'], reply_markup=get_positions_kb(nomenclature_data_dict))
         await state.set_state(FsmFillForm.nomenclature)
     except TelegramBadRequest as e:
         logger.error(f"command_start_replace - error was detected: {e}")
