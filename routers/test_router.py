@@ -20,6 +20,7 @@ class FsmFillForm(StatesGroup):
     category = State()
     nomenclature = State()
     certain_position = State()
+    contacts = State()
 
 
 @router.message(CommandStart(), StateFilter(default_state))
@@ -28,7 +29,8 @@ async def command_start(message: Message):
     
     
 @router.callback_query(F.data == "contacts", StateFilter(default_state))
-async def answer_contacts(call: CallbackQuery):
+async def answer_contacts(call: CallbackQuery, state: FSMContext):
+    await state.set_state(FsmFillForm.contacts)
     await call.message.edit_text(names['contacts'], reply_markup=get_keyboard(["back"]))
     
 
@@ -41,9 +43,7 @@ async def answer_categories(call: CallbackQuery, db_instance: BotDB, state: FSMC
 
 @router.callback_query(F.data != "back", StateFilter(FsmFillForm.category))
 async def answer_nomenclature(call: CallbackQuery, db_instance: BotDB, state: FSMContext):
-    logger.debug(f"function call is in ANSWER_NOMENCLATURE")
-    data = db_instance.get_data_by_category(call.data)
-    data_dict: dict = {i[2]: i[0] for i in data}
+    data_dict: dict = {i[2]: i[0] for i in db_instance.get_data_by_category(call.data)}
     await call.message.edit_text(names['price_list'], reply_markup=get_price_list_kb(data_dict))
     await state.set_state(FsmFillForm.nomenclature)
     
@@ -57,16 +57,19 @@ async def answer_nomenclature(call: CallbackQuery, db_instance: BotDB, state: FS
 async def answer_price(call: CallbackQuery, db_instance: BotDB, state: FSMContext):
     state_str = await state.get_state()
     
-    if state_str == FsmFillForm.category:
+    if state_str == FsmFillForm.category or state_str == FsmFillForm.contacts:
         await state.clear()
-        await call.message.edit_text(names['main_menu'], reply_markup=get_keyboard(kb_main_menu))
+        await command_start(call.message)
     elif state_str == FsmFillForm.nomenclature:
         await state.set_state(FsmFillForm.category)
-        categories_dict: dict = {i[0]: i[0] for i in db_instance.get_categories()}
-        await call.message.edit_text(names['categories'], reply_markup=get_price_list_kb(categories_dict))
+        await answer_categories(call, db_instance, state)
         
-    
     
 @router.callback_query(F.data == "main_menu")
 async def answer_main_menu(call: CallbackQuery):
     await call.message.edit_text(names['main_menu'], reply_markup=get_keyboard(kb_main_menu))
+    
+    
+@router.callback_query()
+async def answer_default(call: CallbackQuery):
+    print(call.model_dump_json(indent=4, exclude_none=True))
