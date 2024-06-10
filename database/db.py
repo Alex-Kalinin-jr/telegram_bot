@@ -94,5 +94,5 @@ class BotDB:
         conn = await self.get_connection()
         cursor = await conn.execute("""SELECT category from data WHERE id = ?""", (id,))
         row = await cursor.fetchone()
-        return row[0][0]
+        return row[0]
     
