@@ -1,28 +1,36 @@
+import asyncio
+import os
+import logging
+import sys
+
+from aiogram import Bot, Dispatcher
+from aiogram.fsm.storage.memory import MemoryStorage
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+
+from config import BOT_TOKEN, BOT_TIMEZONE
+from services.api_session import AsyncRequestSession
+from routers.test_router import router
+from database.db import BotDB
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(
+        level=logging.DEBUG,
+        format='%(filename)s:%(lineno)d #%(levelname)-8s [%(asctime)s] - %(name)s - %(message)s'
+)
 
 
-import ngrok
-from fastapi import FastAPI, APIRouter
-from config import BOT_TOKEN, NGROK_TOKEN
-from bot import bot, dp
-from routers.fastapi_router import router as fastapi_router
-
-
-async def lifespan(app):
-    tmp = await ngrok.forward(8000, authtoken=NGROK_TOKEN)
-    forward_url = tmp.url()
+async def main():
+    db_instance = BotDB('database.db')
+    storage = MemoryStorage()
+    dp = Dispatcher(storage=storage)
+    dp['db_instance'] = db_instance
+    dp.include_router(router)
+    
+    bot = Bot(token=BOT_TOKEN, parse_mode="HTML")
     
     await bot.delete_webhook(drop_pending_updates=True)
-    await bot.set_webhook(url=f"{forward_url}/bot/{BOT_TOKEN}")
-
-    yield
-
-    await bot.session.close()
-
-app = FastAPI(lifespan=lifespan)
-app.include_router(fastapi_router)
+    await dp.start_polling(bot)
 
 
 if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    asyncio.run(main())
