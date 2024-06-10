@@ -97,3 +97,4 @@ class BotDB:
         cursor = await conn.execute("""SELECT category from data WHERE id = ?""", (id,))
         row = await cursor.fetchone()
         return row[0][0]
+    

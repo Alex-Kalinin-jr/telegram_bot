@@ -1,7 +1,8 @@
 [settings]
 token=
+ngrok_token=
 admin_id=
 timezone=
 db_path=
 logs_path=
-language=ru
+language=

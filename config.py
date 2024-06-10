@@ -12,6 +12,7 @@ BOT_VERSION = 1.0
 PATH_DATABASE = settings_configurator['settings']['db_path']
 PATH_LOGS = settings_configurator['settings']['logs_path']
 LANGUAGE = settings_configurator['settings']['language']
+NGROK_TOKEN = settings_configurator['settings']['ngrok_token'].strip()
 
 
 def get_admins() -> list[int]:
