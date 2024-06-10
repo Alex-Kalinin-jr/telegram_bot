@@ -64,7 +64,6 @@ class BotDB:
 
     async def get_data_by_category(self, category) -> list:
         conn = await self.get_connection()
-        logger.debug(f" \n\n****\n\n: categorytype {type(category)}\n\n****\n\n")
         cursor = await conn.execute("""SELECT id, position from data WHERE category = ?""", (category,))
         rows = await cursor.fetchall()
         return rows
@@ -81,7 +80,6 @@ class BotDB:
         conn = await self.get_connection()
         cursor = await conn.execute("""SELECT description from data WHERE id = ?""", (position,))
         row = await cursor.fetchone()
-        logger.debug(f"\n**\n**\n**{row}\n**\n**\n**")
         return row[0]
     
     
