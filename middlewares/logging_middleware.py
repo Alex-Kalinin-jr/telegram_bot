@@ -1,5 +1,7 @@
 from typing import Any, Awaitable, Callable, Dict
 import logging
+import inspect
+from pprint import pprint
 
 from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject
@@ -14,5 +16,8 @@ class LoggingMiddleware(BaseMiddleware):
             data: Dict[str, Any]
     ) -> Any:
         result = await handler(event, data)
-        logger.debug(f"########THIS IS MOCK LOGGER:")
+        # info = inspect.getmembers(handler)
+        pprint(inspect.getmembers(data.get('handler')), indent=4)
+        # pprint(info, indent=4)
+        logger.debug(f"########THIS IS MOCK LOGGER: ")
         return result

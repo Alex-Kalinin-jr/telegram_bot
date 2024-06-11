@@ -14,7 +14,7 @@ from routers.test_router import router
 from middlewares.logging_middleware import LoggingMiddleware
 from database.db import BotDB
 # from aiogram.fsm.storage.redis import RedisStorage, Redis
-from routers.admin_router import admin_router
+from routers.admin_router import r_admin
 
 
 logger = logging.getLogger(__name__)
@@ -33,5 +33,5 @@ dp = Dispatcher(storage=storage)
 dp['db_instance'] = db_instance
 dp.update.middleware(LoggingMiddleware())
 dp.include_router(router)
-dp.include_router(admin_router)
+dp.include_router(r_admin)
 bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))

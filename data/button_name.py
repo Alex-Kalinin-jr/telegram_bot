@@ -23,4 +23,4 @@ dict_names = {
 }
 
 kb_main_menu = [ "contacts", "price_list", ]
-kb_admin_main_menu = ["contacts", "price_list", "add_position"]
+kb_admin_main_menu = ["add_position", "back", ]
