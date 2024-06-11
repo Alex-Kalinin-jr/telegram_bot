@@ -3,14 +3,14 @@ import os
 
 from aiogram.filters import Command, CommandStart, StateFilter
 from aiogram.types import Message, CallbackQuery
-from aiogram import Router, F, Bot
+from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state, State, StatesGroup
 from aiogram.types import FSInputFile
 from aiogram.exceptions import TelegramBadRequest
 
 from keyboards.keyboards import get_price_list_kb, get_keyboard, get_positions_kb
-from data.button_name import kb_main_menu
+from data.button_name import kb_main_menu, kb_admin_main_menu
 from utils.utils import get_language
 from database.db import BotDB
 from keyboards.keyboards import MyCallbackFactory
@@ -28,9 +28,9 @@ class FsmFillForm(StatesGroup):
     position_info = State()
 
 
-async def command_start_replace(message: Message):
-    logger.debug("COMMAND_START_REPLACE")
+async def command_start_replace(message: Message, state: FSMContext):
     try:
+        await state.clear()
         await message.edit_text(f'Hi {message.from_user.full_name}!', reply_markup=get_keyboard(kb_main_menu))
     except TelegramBadRequest as e:
         logger.error(f"command_start_replace - error was detected: {e}")
@@ -38,23 +38,21 @@ async def command_start_replace(message: Message):
 
 @router.message(CommandStart())
 async def command_start(message: Message, state: FSMContext):
-    logger.debug("COMMAND_START")
     try:
         await state.clear()
         await message.answer(f'Hi {message.from_user.full_name}!', reply_markup=get_keyboard(kb_main_menu))
     except TelegramBadRequest as e:
         logger.error(f"command_start_replace - error was detected: {e}")
-    
+
 
 @router.callback_query(F.data == "back")
 async def answer_price(call: CallbackQuery, db_instance: BotDB, state: FSMContext):
-    logger.debug("ANSWER_PRICE")
     state_str = await state.get_state()
     
     try:
         if state_str in [FsmFillForm.category, FsmFillForm.contacts]:
             await state.clear()
-            await command_start_replace(call.message)
+            await command_start_replace(call.message, state)
         elif state_str in [FsmFillForm.category_info, FsmFillForm.nomenclature]:
             await state.set_state(FsmFillForm.category)
             await answer_categories(call, db_instance, state)
@@ -67,7 +65,6 @@ async def answer_price(call: CallbackQuery, db_instance: BotDB, state: FSMContex
         
 @router.callback_query(F.data == "contacts", StateFilter(default_state))
 async def answer_contacts(call: CallbackQuery, state: FSMContext):
-    logger.debug("ANSWER_CONTACTS")
     try:
         await state.set_state(FsmFillForm.contacts)
         await call.message.edit_text(names['contacts'], reply_markup=get_keyboard(["back"]))
@@ -77,7 +74,6 @@ async def answer_contacts(call: CallbackQuery, state: FSMContext):
 
 @router.callback_query(F.data == "price_list", StateFilter(default_state))
 async def answer_categories(call: CallbackQuery, db_instance: BotDB, state: FSMContext):
-    logger.debug("ANSWER_CATEGORIES")
     try:
         rows = await db_instance.get_categories()
         data_dict: dict = {i[0]: i[0] for i in rows}
@@ -90,7 +86,6 @@ async def answer_categories(call: CallbackQuery, db_instance: BotDB, state: FSMC
 @router.callback_query(MyCallbackFactory.filter(F.action == "get_info"), StateFilter(FsmFillForm.category))
 async def get_category_info(call: CallbackQuery, db_instance: BotDB, 
                             state: FSMContext, callback_data: MyCallbackFactory):
-    logger.debug("GET_CATEGORY_INFO")
     try:
         await state.set_state(FsmFillForm.category_info)
         data = await db_instance.get_description_by_category(callback_data.item_id)
@@ -101,7 +96,6 @@ async def get_category_info(call: CallbackQuery, db_instance: BotDB,
 
 @router.callback_query(StateFilter(FsmFillForm.nomenclature))
 async def get_position_info(call: CallbackQuery, db_instance: BotDB, state: FSMContext):
-    logger.debug("GET_POSITION_INFO")
     data_description = await db_instance.get_description_by_position(call.data)
     data = await db_instance.get_position_photos(call.data)
     path = os.getcwd()
@@ -124,7 +118,6 @@ async def get_position_info(call: CallbackQuery, db_instance: BotDB, state: FSMC
 
 @router.callback_query(F.data != "back", StateFilter(FsmFillForm.category))
 async def answer_nomenclature(call: CallbackQuery, db_instance: BotDB, state: FSMContext):
-    logger.debug("ANSWER_NOMENCLATURE")
     nomenclature_data: tuple = await db_instance.get_data_by_category(call.data)
     nomenclature_data_dict: dict = {i[1]: i[0] for i in nomenclature_data}
     try:
@@ -134,8 +127,12 @@ async def answer_nomenclature(call: CallbackQuery, db_instance: BotDB, state: FS
         logger.error(f"command_start_replace - error was detected: {e}")
 
 
-@router.callback_query()
-async def answer_default(call: CallbackQuery):
-    logger.debug("ANSWER_DEFAULT")
-    print(call.model_dump_json(indent=4, exclude_none=True))
+# @router.callback_query()
+# async def answer_default(call: CallbackQuery):
+#     print(call.model_dump_json(indent=4, exclude_none=True))
+
+
+# @router.message()
+# async def answer_default(message: Message):
+#     await message.answer(f"Hi {message.from_user.id}!")
 

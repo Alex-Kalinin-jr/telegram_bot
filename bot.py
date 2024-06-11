@@ -7,10 +7,14 @@ from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
+
 from config import BOT_TOKEN, BOT_TIMEZONE, NGROK_TOKEN
-from services.api_session import AsyncRequestSession
+# from services.api_session import AsyncRequestSession
 from routers.test_router import router
+from middlewares.logging_middleware import LoggingMiddleware
 from database.db import BotDB
+# from aiogram.fsm.storage.redis import RedisStorage, Redis
+from routers.admin_router import admin_router
 
 
 logger = logging.getLogger(__name__)
@@ -22,7 +26,12 @@ logging.basicConfig(
 
 db_instance = BotDB('database.db')
 storage = MemoryStorage()
+# redis = Redis(host='localhost')
+# storage = RedisStorage(redis=redis)
+
 dp = Dispatcher(storage=storage)
 dp['db_instance'] = db_instance
+dp.update.middleware(LoggingMiddleware())
 dp.include_router(router)
+dp.include_router(admin_router)
 bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
