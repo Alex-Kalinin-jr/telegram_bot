@@ -20,6 +20,15 @@ logger = logging.getLogger(__name__)
 router = Router()
 names = get_language()
 
+
+main_menu_markup = get_keyboard(kb_main_menu)
+only_back_menu_markup = get_keyboard(["back"])
+
+#scheduler should be attached. functions to be added for markups reloadings. then markups should be attached statically
+price_menu_markup = 2
+categories_menu_markup = 1
+
+
 class FsmFillForm(StatesGroup):
     category = State()
     nomenclature = State()
@@ -28,10 +37,12 @@ class FsmFillForm(StatesGroup):
     position_info = State()
 
 
+
+
 async def command_start_replace(message: Message, state: FSMContext):
     try:
         await state.clear()
-        await message.edit_text(f'Hi {message.from_user.full_name}!', reply_markup=get_keyboard(kb_main_menu))
+        await message.edit_text(f'Hi {message.from_user.full_name}!', reply_markup=main_menu_markup)
     except TelegramBadRequest as e:
         logger.error(f"command_start_replace - error was detected: {e}")
 
@@ -40,7 +51,7 @@ async def command_start_replace(message: Message, state: FSMContext):
 async def command_start(message: Message, state: FSMContext):
     try:
         await state.clear()
-        await message.answer(f'Hi {message.from_user.full_name}!', reply_markup=get_keyboard(kb_main_menu))
+        await message.answer(f'Hi {message.from_user.full_name}!', reply_markup=main_menu_markup)
     except TelegramBadRequest as e:
         logger.error(f"command_start_replace - error was detected: {e}")
 
@@ -67,7 +78,7 @@ async def answer_price(call: CallbackQuery, db_instance: BotDB, state: FSMContex
 async def answer_contacts(call: CallbackQuery, state: FSMContext):
     try:
         await state.set_state(FsmFillForm.contacts)
-        await call.message.edit_text(names['contacts'], reply_markup=get_keyboard(["back"]))
+        await call.message.edit_text(names['contacts'], reply_markup=only_back_menu_markup)
     except TelegramBadRequest as e:
         logger.error(f"command_start_replace - error was detected: {e}")
 
@@ -89,7 +100,7 @@ async def get_category_info(call: CallbackQuery, db_instance: BotDB,
     try:
         await state.set_state(FsmFillForm.category_info)
         data = await db_instance.get_description_by_category(callback_data.item_id)
-        await call.message.edit_text(data[0], reply_markup=get_keyboard(["back"]))
+        await call.message.edit_text(data[0], reply_markup=only_back_menu_markup)
     except TelegramBadRequest as e:
         logger.error(f"command_start_replace - error was detected: {e}")
 

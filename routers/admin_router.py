@@ -34,3 +34,11 @@ async def answer_back(call: CallbackQuery, state: FSMContext):
 async def answer_add_position(call: CallbackQuery, state: FSMContext):
     await call.message.answer("this is the mock for the add position")
 
+# block user
+# unblock user
+# add user as admin
+# delete user from admins list
+# delete position
+# delete category
+# add new category
+# add new position
