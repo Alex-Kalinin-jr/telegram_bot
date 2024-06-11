@@ -17,19 +17,19 @@ class MyCallbackFactory(CallbackData, prefix="my_cb"):
     item_id: str
 
 
-def get_price_list_kb(items: dict) -> ReplyKeyboardMarkup:
-    keyboard = InlineKeyboardBuilder()
+# def get_price_list_kb(items: dict) -> ReplyKeyboardMarkup:
+#     keyboard = InlineKeyboardBuilder()
 
-    for item in items:
-        keyboard.row(
-            InlineKeyboardButton(text=item, callback_data=items[item]),
-            InlineKeyboardButton(text=BUTTONS_DICT['get_infro'],
-                                 callback_data=MyCallbackFactory(action="get_info", item_id=items[item]).pack()
-        ))
+#     for item in items:
+#         keyboard.row(
+#             InlineKeyboardButton(text=item, callback_data=items[item]),
+#             InlineKeyboardButton(text=BUTTONS_DICT['get_infro'],
+#                                  callback_data=MyCallbackFactory(action="get_info", item_id=items[item]).pack()
+#         ))
         
-    keyboard.row(b_back)
+#     keyboard.row(b_back)
 
-    return keyboard.as_markup(resize_keyboard=True)
+#     return keyboard.as_markup(resize_keyboard=True)
 
 
 def get_positions_kb(items: dict) -> ReplyKeyboardMarkup:
