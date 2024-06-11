@@ -1,6 +1,6 @@
 import logging
 
-from aiogram import Router, F
+from aiogram import Router, F, Bot
 from aiogram.filters import Command, StateFilter
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.state import StatesGroup, State
@@ -21,43 +21,55 @@ r_admin.message.outer_middleware(AdmMiddleware())
 r_admin.callback_query.outer_middleware(AdmMiddleware())
 
 only_back_menu_markup=get_keyboard(["back"])
+admin_menu_keyboard=get_keyboard(kb_admin_main_menu)
 
 class FsmAdmin(StatesGroup):
-    admin_mode_start = State()
     add_category = State()
 
 
 @r_admin.message(Command(commands=['admin']))
 async def command_admin(message: Message, state: FSMContext):
-    state.set_state(FsmAdmin.admin_mode_start)
-    await message.answer('Admin panel', reply_markup=get_keyboard(kb_admin_main_menu))
-
-
-@r_admin.callback_query(F.data == 'back', StateFilter(FsmAdmin.add_category))
-async def answer_back(call: CallbackQuery, state: FSMContext):
     await state.clear()
-    await command_admin(call.message, state)
-    await call.message.edit_text('Admin panel', reply_markup=get_keyboard(kb_admin_main_menu))
+    await message.answer('Admin panel', reply_markup=admin_menu_keyboard)
 
 
-@r_admin.callback_query(F.data == "add_category", StateFilter(FsmAdmin.admin_mode_start))
+async def answer_command_admin(message: Message, state: FSMContext):
+    await state.clear()
+    await message.edit_text('Admin panel', reply_markup=admin_menu_keyboard)
+
+
+@r_admin.callback_query(F.data=='back', StateFilter(FsmAdmin.add_category))
+async def answer_back(call: CallbackQuery, state: FSMContext, bot: Bot):
+    await answer_command_admin(call.message, state)
+
+
+@r_admin.callback_query(F.data=="add_category")
 async def add_new_category(call: CallbackQuery, state: FSMContext):
     await state.set_state(FsmAdmin.add_category)
     await call.message.edit_text(MESSAGES["add_category_1"], reply_markup=only_back_menu_markup)
 
 
-@r_admin.callback_query(StateFilter(FsmAdmin.add_category))
-async def check_and_write_category(call: CallbackQuery, db_instance: BotDB):
+
+#here to be continued
+#here to be continued
+#here to be continued
+#here to be continued
+#here to be continued
+#here to be continued
+@r_admin.message(StateFilter(FsmAdmin.add_category))
+async def check_and_write_category(db_instance: BotDB, state: FSMContext, message: Message):
     categories = await db_instance.get_categories()
-    if call.message.text in categories:
-        await call.message.edit_text(MESSAGES['add_category_already_exist'], reply_markup=only_back_menu_markup)
+    if message.text in categories:
+        await message.edit_text(MESSAGES['add_category_already_exist'], reply_markup=only_back_menu_markup)
     else:
-        await call.message.edit_text(text="mock", reply_markup=only_back_menu_markup)
+        await message.edit_text(text="mock", reply_markup=only_back_menu_markup)
 
 
-@r_admin.callback_query()
-async def debug_function(call: CallbackQuery):
-    print(call.model_dump_json(indent=4), exclude_none=True)
+
+
+# @r_admin.callback_query()
+# async def debug_function(call: CallbackQuery):
+#     print(call.model_dump_json(indent=4, exclude_none=True))
 
 #IN FUTURE
 # block user

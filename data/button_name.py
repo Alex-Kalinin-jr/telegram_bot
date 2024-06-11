@@ -37,4 +37,4 @@ dict_messages = {
 
 
 kb_main_menu = [ "contacts", "price_list", ]
-kb_admin_main_menu = ["add_position", "back", ]
+kb_admin_main_menu = ["add_category", "back", ]

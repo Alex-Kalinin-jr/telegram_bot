@@ -1,5 +1,6 @@
 import logging
 import os
+from typing import Any
 
 from aiogram.filters import Command, CommandStart, StateFilter
 from aiogram.types import Message, CallbackQuery
@@ -8,6 +9,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state, State, StatesGroup
 from aiogram.types import FSInputFile
 from aiogram.exceptions import TelegramBadRequest
+from aiogram import flags
 
 from keyboards.keyboards import get_keyboard, get_positions_kb
 # from keyboards.keyboards import get_price_list_kb, get_keyboard, get_positions_kb
@@ -38,15 +40,18 @@ class FsmFillForm(StatesGroup):
     position_info = State()
 
 
+@flags.f_name(key="command_start")
 async def command_start_replace(message: Message, state: FSMContext):
     try:
         await state.clear()
         await message.edit_text(f'Hi {message.from_user.full_name}!', reply_markup=main_menu_markup)
+
     except TelegramBadRequest as e:
         logger.error(f"command_start_replace - error was detected: {e}")
 
 
 @router.message(CommandStart())
+@flags.f_name(key="command_start")
 async def command_start(message: Message, state: FSMContext):
     try:
         await state.clear()
