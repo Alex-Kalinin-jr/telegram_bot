@@ -57,7 +57,7 @@ async def command_start_replace(message: Message, state: FSMContext):
         logger.error(f"command_start_replace - error was detected: {e}")
 
 
-@router.message(CommandStart(), flags={'name': 'command_start'})
+@router.message(CommandStart(),)
 async def command_start(message: Message, state: FSMContext):
     try:
         await state.clear()
@@ -67,7 +67,7 @@ async def command_start(message: Message, state: FSMContext):
         logger.error(f"command_start_replace - error was detected: {e}")
 
 
-@router.callback_query(F.data == "back", flags={'name': 'answer_price'})
+@router.callback_query(F.data == "back",)
 async def answer_price(call: CallbackQuery, db_instance: BotDB, state: FSMContext):
     state_str = await state.get_state()
     
@@ -85,7 +85,7 @@ async def answer_price(call: CallbackQuery, db_instance: BotDB, state: FSMContex
         logger.error(f"command_start_replace - error was detected: {e}")
         
         
-@router.callback_query(F.data == "contacts", StateFilter(default_state), flags={'name': 'answer_contacts'})
+@router.callback_query(F.data == "contacts", StateFilter(default_state),)
 async def answer_contacts(call: CallbackQuery, state: FSMContext):
     try:
         await state.set_state(FsmFillForm.contacts)
@@ -94,7 +94,7 @@ async def answer_contacts(call: CallbackQuery, state: FSMContext):
         logger.error(f"command_start_replace - error was detected: {e}")
 
 
-@router.callback_query(F.data == "price_list", StateFilter(default_state), flags={'name': 'answer_categories'})
+@router.callback_query(F.data == "price_list", StateFilter(default_state),)
 async def answer_categories(call: CallbackQuery, db_instance: BotDB, state: FSMContext):
     try:
         rows = await db_instance.get_categories()
@@ -105,7 +105,7 @@ async def answer_categories(call: CallbackQuery, db_instance: BotDB, state: FSMC
         logger.error(f"command_start_replace - error was detected: {e}")
 
 
-@router.callback_query(StateFilter(FsmFillForm.nomenclature), flags={'name': 'get_position_info'})
+@router.callback_query(StateFilter(FsmFillForm.nomenclature),)
 async def get_position_info(call: CallbackQuery, db_instance: BotDB, bot: Bot):
     data_description = await db_instance.get_description_by_position(call.data)
     data = await db_instance.get_position_photos(call.data)
@@ -131,7 +131,7 @@ async def get_position_info(call: CallbackQuery, db_instance: BotDB, bot: Bot):
         logger.error(f"command_start_replace - error was detected: {e}")
         
 
-@router.callback_query(F.data != "back", StateFilter(FsmFillForm.category), flags={'name': 'answer_nomenclature'})
+@router.callback_query(F.data != "back", StateFilter(FsmFillForm.category),)
 async def answer_nomenclature(call: CallbackQuery, db_instance: BotDB, state: FSMContext):
     nomenclature_data: tuple = await db_instance.get_data_by_category(call.data)
     nomenclature_data_dict: dict = {i[1]: i[0] for i in nomenclature_data}
