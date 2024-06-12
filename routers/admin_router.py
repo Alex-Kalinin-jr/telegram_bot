@@ -12,13 +12,20 @@ from data.button_name import kb_admin_main_menu
 from utils.utils import get_admin_messages
 from data.button_name import dict_messages
 from database.db import BotDB
+from middlewares.logging_middleware import handle_outer_middleware, logging_middleware
+
+
+logger = logging.getLogger(__name__)
 
 MESSAGES = get_admin_messages()
 
-logger = logging.getLogger(__name__)
 r_admin = Router()
 r_admin.message.outer_middleware(AdmMiddleware())
 r_admin.callback_query.outer_middleware(AdmMiddleware())
+r_admin.message.outer_middleware(handle_outer_middleware)
+r_admin.callback_query.outer_middleware(handle_outer_middleware)
+r_admin.message.middleware(logging_middleware)
+r_admin.callback_query.middleware(logging_middleware)
 
 only_back_menu_markup=get_keyboard(["back"])
 admin_menu_keyboard=get_keyboard(kb_admin_main_menu)
@@ -27,7 +34,7 @@ class FsmAdmin(StatesGroup):
     add_category = State()
 
 
-@r_admin.message(Command(commands=['admin']))
+@r_admin.message(Command(commands=['admin']), flags={'name': 'command_admin'})
 async def command_admin(message: Message, state: FSMContext):
     await state.clear()
     await message.answer('Admin panel', reply_markup=admin_menu_keyboard)
@@ -38,12 +45,12 @@ async def answer_command_admin(message: Message, state: FSMContext):
     await message.edit_text('Admin panel', reply_markup=admin_menu_keyboard)
 
 
-@r_admin.callback_query(F.data=='back', StateFilter(FsmAdmin.add_category))
+@r_admin.callback_query(F.data=='back', StateFilter(FsmAdmin.add_category), flags={'name': 'answer_back'})
 async def answer_back(call: CallbackQuery, state: FSMContext, bot: Bot):
     await answer_command_admin(call.message, state)
 
 
-@r_admin.callback_query(F.data=="add_category")
+@r_admin.callback_query(F.data=="add_category", flags={'name': 'add_new_category'})
 async def add_new_category(call: CallbackQuery, state: FSMContext):
     await state.set_state(FsmAdmin.add_category)
     await call.message.edit_text(MESSAGES["add_category_1"], reply_markup=only_back_menu_markup)
@@ -56,7 +63,7 @@ async def add_new_category(call: CallbackQuery, state: FSMContext):
 #here to be continued
 #here to be continued
 #here to be continued
-@r_admin.message(StateFilter(FsmAdmin.add_category))
+@r_admin.message(StateFilter(FsmAdmin.add_category), flags={'name': 'check_and_write_category'})
 async def check_and_write_category(db_instance: BotDB, state: FSMContext, message: Message):
     categories = await db_instance.get_categories()
     if message.text in categories:

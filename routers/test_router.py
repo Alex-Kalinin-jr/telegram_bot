@@ -1,6 +1,7 @@
 import logging
 import os
 from typing import Any
+import time
 
 from aiogram.filters import Command, CommandStart, StateFilter
 from aiogram.types import Message, CallbackQuery
@@ -10,9 +11,10 @@ from aiogram.fsm.state import default_state, State, StatesGroup
 from aiogram.types import FSInputFile
 from aiogram.exceptions import TelegramBadRequest
 from aiogram import flags
+from aiogram.dispatcher.flags import extract_flags
 
+from middlewares.logging_middleware import handle_outer_middleware, logging_middleware
 from keyboards.keyboards import get_keyboard, get_positions_kb
-# from keyboards.keyboards import get_price_list_kb, get_keyboard, get_positions_kb
 from data.button_name import kb_main_menu
 from utils.utils import get_language
 from database.db import BotDB
@@ -21,6 +23,11 @@ from config import BOT_TOKEN
 
 logger = logging.getLogger(__name__)
 router = Router()
+router.message.outer_middleware(handle_outer_middleware)
+router.callback_query.outer_middleware(handle_outer_middleware)
+router.message.middleware(logging_middleware)
+router.callback_query.middleware(logging_middleware)
+
 names = get_language()
 # DESCRIPTION OF CATEGORY SHOULD BE PASSED AS MESSAGE TEXT WHEN GO INTO CERTAIN CATEGORY
 
@@ -40,7 +47,7 @@ class FsmFillForm(StatesGroup):
     position_info = State()
 
 
-@flags.f_name(key="command_start")
+@flags.chat_action
 async def command_start_replace(message: Message, state: FSMContext):
     try:
         await state.clear()
@@ -50,17 +57,17 @@ async def command_start_replace(message: Message, state: FSMContext):
         logger.error(f"command_start_replace - error was detected: {e}")
 
 
-@router.message(CommandStart())
-@flags.f_name(key="command_start")
+@router.message(CommandStart(), flags={'name': 'command_start'})
 async def command_start(message: Message, state: FSMContext):
     try:
         await state.clear()
         await message.answer(f'Hi {message.from_user.full_name}!', reply_markup=main_menu_markup)
+        return True
     except TelegramBadRequest as e:
         logger.error(f"command_start_replace - error was detected: {e}")
 
 
-@router.callback_query(F.data == "back")
+@router.callback_query(F.data == "back", flags={'name': 'answer_price'})
 async def answer_price(call: CallbackQuery, db_instance: BotDB, state: FSMContext):
     state_str = await state.get_state()
     
@@ -78,7 +85,7 @@ async def answer_price(call: CallbackQuery, db_instance: BotDB, state: FSMContex
         logger.error(f"command_start_replace - error was detected: {e}")
         
         
-@router.callback_query(F.data == "contacts", StateFilter(default_state))
+@router.callback_query(F.data == "contacts", StateFilter(default_state), flags={'name': 'answer_contacts'})
 async def answer_contacts(call: CallbackQuery, state: FSMContext):
     try:
         await state.set_state(FsmFillForm.contacts)
@@ -87,30 +94,18 @@ async def answer_contacts(call: CallbackQuery, state: FSMContext):
         logger.error(f"command_start_replace - error was detected: {e}")
 
 
-@router.callback_query(F.data == "price_list", StateFilter(default_state))
+@router.callback_query(F.data == "price_list", StateFilter(default_state), flags={'name': 'answer_categories'})
 async def answer_categories(call: CallbackQuery, db_instance: BotDB, state: FSMContext):
     try:
         rows = await db_instance.get_categories()
         data_dict: dict = {i[0]: i[0] for i in rows}
-        # await call.message.edit_text(names['categories'], reply_markup=get_price_list_kb(data_dict))
         await call.message.edit_text(names['categories'], reply_markup=get_positions_kb(data_dict))
         await state.set_state(FsmFillForm.category)
     except TelegramBadRequest as e:
         logger.error(f"command_start_replace - error was detected: {e}")
 
 
-# @router.callback_query(MyCallbackFactory.filter(F.action == "get_info"), StateFilter(FsmFillForm.category))
-# async def get_category_info(call: CallbackQuery, db_instance: BotDB, 
-#                             state: FSMContext, callback_data: MyCallbackFactory):
-#     try:
-#         await state.set_state(FsmFillForm.category_info)
-#         data = await db_instance.get_description_by_category(callback_data.item_id)
-#         await call.message.edit_text(data[0], reply_markup=only_back_menu_markup)
-#     except TelegramBadRequest as e:
-#         logger.error(f"command_start_replace - error was detected: {e}")
-
-
-@router.callback_query(StateFilter(FsmFillForm.nomenclature))
+@router.callback_query(StateFilter(FsmFillForm.nomenclature), flags={'name': 'get_position_info'})
 async def get_position_info(call: CallbackQuery, db_instance: BotDB, bot: Bot):
     data_description = await db_instance.get_description_by_position(call.data)
     data = await db_instance.get_position_photos(call.data)
@@ -136,7 +131,7 @@ async def get_position_info(call: CallbackQuery, db_instance: BotDB, bot: Bot):
         logger.error(f"command_start_replace - error was detected: {e}")
         
 
-@router.callback_query(F.data != "back", StateFilter(FsmFillForm.category))
+@router.callback_query(F.data != "back", StateFilter(FsmFillForm.category), flags={'name': 'answer_nomenclature'})
 async def answer_nomenclature(call: CallbackQuery, db_instance: BotDB, state: FSMContext):
     nomenclature_data: tuple = await db_instance.get_data_by_category(call.data)
     nomenclature_data_dict: dict = {i[1]: i[0] for i in nomenclature_data}
@@ -156,4 +151,3 @@ async def answer_nomenclature(call: CallbackQuery, db_instance: BotDB, state: FS
 # @router.message()
 # async def answer_default(message: Message):
 #     await message.answer(f"Hi {message.from_user.id}!")
-

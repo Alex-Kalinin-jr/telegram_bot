@@ -4,7 +4,6 @@ from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject
 
 
-
 ADMINS=[1825388744] # to be relocated
 
 class AdmMiddleware(BaseMiddleware):

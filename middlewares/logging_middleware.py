@@ -6,31 +6,23 @@ import time
 
 from aiogram import BaseMiddleware, Dispatcher
 from aiogram.types import TelegramObject
-from aiogram.dispatcher.flags import get_flag
+from aiogram.dispatcher.flags import get_flag, extract_flags
 
 
 logger = logging.getLogger(__name__)
+formatter = logging.Formatter('%(levelname)s - %(message)s')
+handler = logging.FileHandler('functions_time.log')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 
-class LoggingMiddleware(BaseMiddleware):
-
-    async def __call__(
-            self, handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
-            event: TelegramObject,
-            data: Dict[str, Any]
-    ) -> Any:
-        data["time_start"] = time.clock_gettime(time.CLOCK_MONOTONIC)
-        data["func_name"] = "mock_function"
-        return await handler(event, data)
+async def handle_outer_middleware(handler, event, data):
+    data["time_start"] = time.clock_gettime(time.CLOCK_MONOTONIC)
+    return await handler(event, data)
     
-class LoggingInnerMiddleware(BaseMiddleware):
-    async def __call__(
-            self, handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
-            event: TelegramObject,
-            data: Dict[str, Any]
-    ) -> Any:
-        data["time_start"] = time.clock_gettime(time.CLOCK_MONOTONIC)
-        result = await handler(event, data)
-        tt = get_flag(data, "f_name")
-        logger.debug(f"{tt}: {time.clock_gettime(time.CLOCK_MONOTONIC) - data['time_start']}")
-        return result
+
+async def logging_middleware(handler, event, data):
+    flags_data = extract_flags(data)
+    timedelta = time.clock_gettime(time.CLOCK_MONOTONIC) - data["time_start"]
+    logger.debug(f"{flags_data['name']} : {timedelta}")
+    return await handler(event, data)

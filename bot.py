@@ -11,7 +11,6 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from config import BOT_TOKEN, BOT_TIMEZONE, NGROK_TOKEN
 # from services.api_session import AsyncRequestSession
 from routers.test_router import router
-from middlewares.logging_middleware import LoggingMiddleware, LoggingInnerMiddleware
 from database.db import BotDB
 from aiogram.fsm.storage.redis import RedisStorage, Redis
 from routers.admin_router import r_admin
@@ -31,8 +30,6 @@ storage = MemoryStorage()
 
 dp = Dispatcher(storage=storage)
 dp['db_instance'] = db_instance
-dp.update.outer_middleware(LoggingMiddleware())
-dp.update.middleware(LoggingInnerMiddleware())
 dp.include_router(r_admin)
 dp.include_router(router)
 bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
