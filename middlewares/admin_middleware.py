@@ -4,7 +4,7 @@ from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject
 
 
-ADMINS=[1825388744] # to be relocated
+ADMINS=[] # to be relocated
 
 class AdmMiddleware(BaseMiddleware):
     async def __call__(
