@@ -3,8 +3,10 @@ from typing import Any, Awaitable, Callable, Dict
 from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject
 
+from utils.utils import get_admins
 
-ADMINS=[] # to be relocated
+
+ADMINS = get_admins()
 
 class AdmMiddleware(BaseMiddleware):
     async def __call__(

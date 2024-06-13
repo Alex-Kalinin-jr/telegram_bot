@@ -1,9 +1,7 @@
 import logging
 import os
-from typing import Any
-import time
 
-from aiogram.filters import Command, CommandStart, StateFilter
+from aiogram.filters import CommandStart, StateFilter
 from aiogram.types import Message, CallbackQuery
 from aiogram import Router, F, Bot
 from aiogram.fsm.context import FSMContext
@@ -11,15 +9,13 @@ from aiogram.fsm.state import default_state, State, StatesGroup
 from aiogram.types import FSInputFile
 from aiogram.exceptions import TelegramBadRequest
 from aiogram import flags
-from aiogram.dispatcher.flags import extract_flags
 
 from middlewares.logging_middleware import handle_outer_middleware, logging_middleware
 from keyboards.keyboards import get_keyboard, get_positions_kb
 from data.button_name import kb_main_menu
 from utils.utils import get_language
 from database.db import BotDB
-from keyboards.keyboards import MyCallbackFactory
-from config import BOT_TOKEN
+
 
 logger = logging.getLogger(__name__)
 router = Router()

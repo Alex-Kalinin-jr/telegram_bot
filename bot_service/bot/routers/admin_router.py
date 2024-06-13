@@ -10,7 +10,6 @@ from middlewares.admin_middleware import AdmMiddleware
 from keyboards.keyboards import get_keyboard
 from data.button_name import kb_admin_main_menu
 from utils.utils import get_admin_messages
-from data.button_name import dict_messages
 from database.db import BotDB
 from middlewares.logging_middleware import handle_outer_middleware, logging_middleware
 
@@ -20,8 +19,6 @@ logger = logging.getLogger(__name__)
 MESSAGES = get_admin_messages()
 
 r_admin = Router()
-# r_admin.message.outer_middleware(AdmMiddleware())
-# r_admin.callback_query.outer_middleware(AdmMiddleware())
 r_admin.message.outer_middleware(handle_outer_middleware)
 r_admin.callback_query.outer_middleware(handle_outer_middleware)
 r_admin.message.middleware(logging_middleware)

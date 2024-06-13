@@ -1,6 +1,10 @@
-run:
-	nohup python main.py > main_log.log 2>&1 &
+up:
+	sudo docker-compose up
 
+down:
+	sudo docker-compose down
 
-# TO CHECK THE PROCESS IS LAUNCHING: ps aux | grep -v grep | grep main.py
-# TO SCHEDULE RELAUNCHING WITH CRONTAB: 0 * * * * /home/alex/bltk_minibot/launch.sh >> /home/alex/bltk_minibot/cron_log.log 2>&1
+rmbot:
+	- sudo docker stop telegram_bot_service
+	- sudo docker rm telegram_bot_service
+	- sudo docker rmi bltk_minibot_bot_service
