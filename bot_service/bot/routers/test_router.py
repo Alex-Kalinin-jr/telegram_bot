@@ -15,6 +15,7 @@ from keyboards.keyboards import get_keyboard, get_positions_kb
 from data.button_name import kb_main_menu
 from utils.utils import get_language
 from database.db import BotDB
+from services.db import Interactor
 
 
 logger = logging.getLogger(__name__)
@@ -54,7 +55,16 @@ async def command_start_replace(message: Message, state: FSMContext):
 
 
 @router.message(CommandStart(),)
-async def command_start(message: Message, state: FSMContext):
+async def command_start(message: Message, state: FSMContext, db_service: Interactor):
+    response = db_service.get_data()
+    print(f"!!!!!!!!!!!!!!!!!!!!!!!!!{response}")
+    print(f"!!!!!!!!!!!!!!!!!!!!!!!!!{response}")
+    print(f"!!!!!!!!!!!!!!!!!!!!!!!!!{response}")
+    print(f"!!!!!!!!!!!!!!!!!!!!!!!!!{response}")
+    print(f"!!!!!!!!!!!!!!!!!!!!!!!!!{response}")
+    print(f"!!!!!!!!!!!!!!!!!!!!!!!!!{response}")
+    print(f"!!!!!!!!!!!!!!!!!!!!!!!!!{response}")
+    print(f"!!!!!!!!!!!!!!!!!!!!!!!!!{response}")
     try:
         await state.clear()
         await message.answer(f'Hi {message.from_user.full_name}!', reply_markup=main_menu_markup)
