@@ -7,5 +7,5 @@ class Interactor():
 
     def get_data(self):
         response = requests.get(f"{self.url}/getall")
-        return response
+        return response.json()
 
