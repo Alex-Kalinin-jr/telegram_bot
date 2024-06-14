@@ -1,4 +1,13 @@
+import argparse
+
 import sqlite3
+
+
+parser = argparse.ArgumentParser(
+    prog="dbhandler",
+    description='this script helps fill and check database data',
+    epilog='abc'
+)
 
 
 conn = sqlite3.connect("database.db")

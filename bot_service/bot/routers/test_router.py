@@ -110,7 +110,7 @@ async def get_position_info(call: CallbackQuery, db_instance: BotDB, bot: Bot):
 
     try:
         for i in data:
-            file_path = os.path.join(path, "images", i[0])
+            file_path = os.path.join(path, "bot/images", i[0])
             logger.debug(f"this is file path {file_path}")
             photo = FSInputFile(file_path, filename="image")
             await call.message.answer_photo(photo)

@@ -1,5 +1,3 @@
-
-
 import ngrok
 from fastapi import FastAPI, APIRouter
 from config import BOT_TOKEN, NGROK_TOKEN
