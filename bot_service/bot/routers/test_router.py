@@ -57,14 +57,7 @@ async def command_start_replace(message: Message, state: FSMContext):
 @router.message(CommandStart(),)
 async def command_start(message: Message, state: FSMContext, db_service: Interactor):
     response = db_service.get_data()
-    print(f"!!!!!!!!!!!!!!!!!!!!!!!!!{response}")
-    print(f"!!!!!!!!!!!!!!!!!!!!!!!!!{response}")
-    print(f"!!!!!!!!!!!!!!!!!!!!!!!!!{response}")
-    print(f"!!!!!!!!!!!!!!!!!!!!!!!!!{response}")
-    print(f"!!!!!!!!!!!!!!!!!!!!!!!!!{response}")
-    print(f"!!!!!!!!!!!!!!!!!!!!!!!!!{response}")
-    print(f"!!!!!!!!!!!!!!!!!!!!!!!!!{response}")
-    print(f"!!!!!!!!!!!!!!!!!!!!!!!!!{response}")
+
     try:
         await state.clear()
         await message.answer(f'Hi {message.from_user.full_name}!', reply_markup=main_menu_markup)
