@@ -10,10 +10,10 @@ rmbot:
 	- sudo docker rmi bltk_minibot_bot_service
 
 migratedb:
-	-docker-compose exec db_service alembic revision \
+	-sudo docker-compose exec db_service alembic revision \
 	--autogenerate -m "revision_number_$(REVISIONNUMBER)"
-	-docker-compose exec db_service alembic upgrade head
+	-sudo docker-compose exec db_service alembic upgrade head
 
 filldb:
-	-docker-compose exec db_service alembic upgrade head
-	-docker-compose exec db_service python3 filling_data.py
+	-sudo docker-compose exec db_service alembic upgrade head
+	-sudo docker-compose exec db_service python3 filling_data.py
