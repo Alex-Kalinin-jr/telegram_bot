@@ -12,8 +12,11 @@ rmbot:
 migratedb:
 	-sudo docker-compose exec db_service alembic revision \
 	--autogenerate -m "revision_number_$(REVISIONNUMBER)"
+
+upgrade:
 	-sudo docker-compose exec db_service alembic upgrade head
 
 filldb:
 	-sudo docker-compose exec db_service alembic upgrade head
 	-sudo docker-compose exec db_service python3 filling_data.py
+

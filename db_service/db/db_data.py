@@ -40,4 +40,22 @@ positions = [
         "category" : "категория 1",
         "img" : ["url1", "url2", "url3"]
     },
+    {
+        "name" : "позиция 6",
+        "description" : "akf",
+        "category" : "категория 2",
+        "img" : ["url1", "url2", "url3"]
+    },
+    {
+        "name" : "позиция 7",
+        "description" : "akf",
+        "category" : "категория 2",
+        "img" : ["url1", "url2", "url3"]
+    },
+    {
+        "name" : "позиция 8",
+        "description" : "akf",
+        "category" : "категория 2",
+        "img" : ["url1", "url2", "url3"]
+    },
 ]

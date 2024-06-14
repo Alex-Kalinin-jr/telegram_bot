@@ -12,16 +12,18 @@ async def init_db_by_data():
             await session.commit()
 
             related_positions = [x for x in positions if x["category"] == category["name"]]
-            for pos in related_positions:
-                record_pos = Positions(position=pos["name"], description=pos["description"], category = record_cat)
-                session.add(record_pos)
-                await session.commit()
-
-                related_imgs = pos["img"]
-                for img in related_imgs:
-                    record_img = Links(position = record_pos, img=img)
-                    session.add(record_img)
-                await session.commit()
-                session.refresh(record_pos)
-                print(f"Created: {record_pos}")
+            if not related_positions == []:
+                for pos in related_positions:
+                    record_pos = Positions(position=pos["name"], description=pos["description"], category = record_cat)
+                    session.add(record_pos)
+                    await session.commit()
+                    
+                    related_imgs = pos["img"]
+                    if not related_imgs == []:
+                        for img in related_imgs:
+                            record_img = Links(position = record_pos, img=img)
+                            session.add(record_img)
+                        await session.commit()
+                        session.refresh(record_pos)
+                        print(f"Created: {record_pos}")
             
