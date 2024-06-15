@@ -103,42 +103,43 @@ async def answer_categories(call: CallbackQuery, db_instance: BotDB, state: FSMC
 
 
 @router.callback_query(StateFilter(FsmFillForm.nomenclature),)
-async def get_position_info(call: CallbackQuery, db_instance: BotDB, bot: Bot):
-    data_description = await db_instance.get_description_by_position(call.data)
-    data = await db_instance.get_position_photos(call.data)
-    path = os.getcwd()
-
-
+async def get_position_info(call: CallbackQuery, db_service: Interactor, bot: Bot):
     try:
+        data_description = await db_service.get_description_by_position(call.data)
+        data = await db_service.get_position_photos(call.data)
+        path = os.getcwd()
         for i in data:
             file_path = os.path.join(path, "bot/images", i[0])
+            print("----------")
             logger.debug(f"this is file path {file_path}")
-            photo = FSInputFile(file_path, filename="image")
-            await call.message.answer_photo(photo)
+            # photo = FSInputFile(file_path, filename="image")
+            # await call.message.answer_photo(photo)
 
-        category = await db_instance.get_category_by_id(call.data)
-        keyboard_data = await db_instance.get_data_by_category(category)
-        data_dict: dict = {i[1]: i[0] for i in keyboard_data}
-        await call.message.answer(data_description, reply_markup=get_positions_kb(data_dict))
+        # category = await db_instance.get_category_by_id(call.data)
+        # keyboard_data = await db_instance.get_data_by_category(category)
+        # data_dict: dict = {i[1]: i[0] for i in keyboard_data}
+        # await call.message.answer(data_description, reply_markup=get_positions_kb(data_dict))
+
+
+
         await bot.delete_message(
             chat_id=call.message.chat.id,
             message_id=call.message.message_id
         )
-    except TelegramBadRequest as e:
+    except Exception as e:
         logger.error(f"command_start_replace - error was detected: {e}")
         
 
 @router.callback_query(F.data != "back", StateFilter(FsmFillForm.category),)
 async def answer_nomenclature(call: CallbackQuery, db_instance: BotDB, state: FSMContext, db_service: Interactor):
     data = db_service.get_description_by_category(call.data)
-    nomenclature_data = db_service.get_data_by_category(call.data)
-    print(nomenclature_data)
-    # nomenclature_data_dict: dict = {i[1]: i[0] for i in nomenclature_data}
-    # try:
-    #     await call.message.edit_text(data[0], reply_markup=get_positions_kb(nomenclature_data_dict))
-    #     await state.set_state(FsmFillForm.nomenclature)
-    # except TelegramBadRequest as e:
-    #     logger.error(f"command_start_replace - error was detected: {e}")
+    nomenclature_data = db_service.get_data_by_category(data["name"])
+    nomenclature_data_dict: dict = {i["position"]: i["position"] for i in nomenclature_data}
+    try:
+        await call.message.edit_text(data["description"], reply_markup=get_positions_kb(nomenclature_data_dict))
+        await state.set_state(FsmFillForm.nomenclature)
+    except TelegramBadRequest as e:
+        logger.error(f"command_start_replace - error was detected: {e}")
 
 
 # @router.callback_query()

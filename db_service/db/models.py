@@ -2,6 +2,7 @@ from typing import Optional, List
 from uuid import UUID, uuid4
 from sqlmodel import SQLModel, Field, Relationship
 from sqlalchemy import Enum as SqlEnum
+from sqlalchemy.orm import Mapped
 
 
 class Categories(SQLModel, table=True):
@@ -9,17 +10,17 @@ class Categories(SQLModel, table=True):
     name: str = Field(...)
     description: Optional[str] = Field(default="описание отсутствует")
 
-    position: "Positions" = Relationship(back_populates="category")  # Forward reference still needed
+    position: Mapped[List["Positions"]] = Relationship(back_populates="category")
 
 
 class Positions(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     position: str = Field(...)
-    category_id: Optional[int] = Field(default=None, foreign_key="categories.id")  # Reference table name in string
+    category_id: Optional[int] = Field(default=None, foreign_key="categories.id")
     description: Optional[str] = Field(default="описание отсутствует")
 
-    links: List["Links"] = Relationship(back_populates="position")
-    category: Categories = Relationship(back_populates="position")
+    links: Mapped[List["Links"]] = Relationship(back_populates="position")
+    category: Mapped[Categories] = Relationship(back_populates="position")
 
 
 class Links(SQLModel, table=True):
@@ -27,4 +28,4 @@ class Links(SQLModel, table=True):
     position_id: Optional[int] = Field(default=None, foreign_key="positions.id", index=True)
     img: Optional[str] = Field(default=None)
 
-    position: Positions = Relationship(back_populates="links")
+    position: Mapped[Positions] = Relationship(back_populates="links")

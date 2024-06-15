@@ -1,30 +1,20 @@
 from db.database import async_session
 from db.db_data import *
 from db.models import *
-
-
-async def init_db_by_data():
-    async with async_session() as session:
-        for category in categories:
-            record_cat = Categories(name=category["name"],
-                                    description=category["description"])
-            session.add(record_cat)
-            await session.commit()
-
-            related_positions = [x for x in positions if x["category"] == category["name"]]
-            if not related_positions == []:
-                for pos in related_positions:
-                    record_pos = Positions(position=pos["name"], 
-                                            description=pos["description"], category = record_cat)
-                    session.add(record_pos)
-                    await session.commit()
-                    
-                    related_imgs = pos["img"]
-                    if not related_imgs == []:
-                        for img in related_imgs:
-                            record_img = Links(position = record_pos, img=img)
-                            session.add(record_img)
-                        await session.commit()
-                        session.refresh(record_pos)
-                        print(f"Created: {record_pos}")
+from sqlmodel.ext.asyncio.session import AsyncSession
             
+async def init_db_by_data(session: AsyncSession):  # Pass session as argument
+    for category_data in categories:
+        category = Categories(name=category_data["name"], description=category_data["description"])
+        session.add(category)  # Add the category first
+
+        related_positions = [x for x in positions if x["category"] == category_data["name"]]
+        for pos_data in related_positions:
+            position = Positions(position=pos_data["name"], description=pos_data["description"], category=category)  # Assign category directly
+            session.add(position)
+
+            for img in pos_data["img"]:
+                link = Links(position=position, img=img)
+                session.add(link)
+
+    await session.commit()
