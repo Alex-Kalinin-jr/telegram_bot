@@ -14,7 +14,8 @@ async def init_db_by_data():
             related_positions = [x for x in positions if x["category"] == category["name"]]
             if not related_positions == []:
                 for pos in related_positions:
-                    record_pos = Positions(position=pos["name"], description=pos["description"], category = record_cat)
+                    record_pos = Positions(position=pos["name"], 
+                                            description=pos["description"], category = record_cat)
                     session.add(record_pos)
                     await session.commit()
                     

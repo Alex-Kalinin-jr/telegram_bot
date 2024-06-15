@@ -6,17 +6,21 @@ class Interactor():
         self.url = url
 
 
-    def get_data(self):
-        response = requests.get(f"{self.url}/getall")
-        return response.json()
-    
-
-    def get_positions_by_category(self, category: str):
-        response = requests.get(f"{self.url}/{category}")
-        return response.json()
-    
-    
     def get_categories(self):
         response = requests.get(f"{self.url}/categories")
         return response.json()
+    
+
+    def get_description_by_category(self, category: str):
+        response = requests.get(f"{self.url}/category/{category}")
+        return response.json()
+
+
+
+    def get_data_by_category(self, category: str):
+        
+        response = requests.get(f"{self.url}/category_data/{category}")
+        return response.json()
+    
+
 

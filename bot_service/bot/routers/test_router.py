@@ -55,9 +55,7 @@ async def command_start_replace(message: Message, state: FSMContext):
 
 
 @router.message(CommandStart(),)
-async def command_start(message: Message, state: FSMContext, db_service: Interactor):
-    response = db_service.get_data()
-
+async def command_start(message: Message, state: FSMContext):
     try:
         await state.clear()
         await message.answer(f'Hi {message.from_user.full_name}!', reply_markup=main_menu_markup)
@@ -131,15 +129,16 @@ async def get_position_info(call: CallbackQuery, db_instance: BotDB, bot: Bot):
         
 
 @router.callback_query(F.data != "back", StateFilter(FsmFillForm.category),)
-async def answer_nomenclature(call: CallbackQuery, db_instance: BotDB, state: FSMContext):
-    nomenclature_data: tuple = await db_instance.get_data_by_category(call.data)
-    nomenclature_data_dict: dict = {i[1]: i[0] for i in nomenclature_data}
-    data = await db_instance.get_description_by_category(call.data)
-    try:
-        await call.message.edit_text(data[0], reply_markup=get_positions_kb(nomenclature_data_dict))
-        await state.set_state(FsmFillForm.nomenclature)
-    except TelegramBadRequest as e:
-        logger.error(f"command_start_replace - error was detected: {e}")
+async def answer_nomenclature(call: CallbackQuery, db_instance: BotDB, state: FSMContext, db_service: Interactor):
+    data = db_service.get_description_by_category(call.data)
+    nomenclature_data = db_service.get_data_by_category(call.data)
+    print(nomenclature_data)
+    # nomenclature_data_dict: dict = {i[1]: i[0] for i in nomenclature_data}
+    # try:
+    #     await call.message.edit_text(data[0], reply_markup=get_positions_kb(nomenclature_data_dict))
+    #     await state.set_state(FsmFillForm.nomenclature)
+    # except TelegramBadRequest as e:
+    #     logger.error(f"command_start_replace - error was detected: {e}")
 
 
 # @router.callback_query()
