@@ -94,10 +94,10 @@ async def answer_contacts(call: CallbackQuery, state: FSMContext):
 
 
 @router.callback_query(F.data == "price_list", StateFilter(default_state),)
-async def answer_categories(call: CallbackQuery, db_instance: BotDB, state: FSMContext):
+async def answer_categories(call: CallbackQuery, db_instance: BotDB, state: FSMContext, db_service: Interactor):
     try:
-        rows = await db_instance.get_categories()
-        data_dict: dict = {i[0]: i[0] for i in rows}
+        response = db_service.get_categories()
+        data_dict: dict = {i["name"]: i["name"] for i in response}
         await call.message.edit_text(names['categories'], reply_markup=get_positions_kb(data_dict))
         await state.set_state(FsmFillForm.category)
     except TelegramBadRequest as e:
