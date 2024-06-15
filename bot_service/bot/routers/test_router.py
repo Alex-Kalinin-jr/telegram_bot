@@ -102,32 +102,32 @@ async def answer_categories(call: CallbackQuery, db_instance: BotDB, state: FSMC
         logger.error(f"command_start_replace - error was detected: {e}")
 
 
+# see Models.py of db_service
 @router.callback_query(StateFilter(FsmFillForm.nomenclature),)
 async def get_position_info(call: CallbackQuery, db_service: Interactor, bot: Bot):
     try:
-        data_description = await db_service.get_description_by_position(call.data)
-        data = await db_service.get_position_photos(call.data)
+        data_description = db_service.get_position_by_its_name(call.data) #this
+        data = db_service.get_position_photos(call.data) #this
+        category = db_service.get_category_by_id(data_description["category_id"]) #this
         path = os.getcwd()
         for i in data:
-            file_path = os.path.join(path, "bot/images", i[0])
-            print("----------")
-            logger.debug(f"this is file path {file_path}")
-            # photo = FSInputFile(file_path, filename="image")
-            # await call.message.answer_photo(photo)
+            file_path = os.path.join(path, "bot/images", i["img"])
+            photo = FSInputFile(file_path, filename="image")
+            if photo:
+                await call.message.answer_photo(photo)
 
-        # category = await db_instance.get_category_by_id(call.data)
-        # keyboard_data = await db_instance.get_data_by_category(category)
-        # data_dict: dict = {i[1]: i[0] for i in keyboard_data}
-        # await call.message.answer(data_description, reply_markup=get_positions_kb(data_dict))
+        keyboard_data = db_service.get_data_by_category(category) #this
+        data_dict: dict = {i["position"]: i["position"] for i in keyboard_data}
+        await call.message.answer(data_description, reply_markup=get_positions_kb(data_dict))
 
 
 
-        await bot.delete_message(
-            chat_id=call.message.chat.id,
-            message_id=call.message.message_id
-        )
+        # await bot.delete_message(
+        #     chat_id=call.message.chat.id,
+        #     message_id=call.message.message_id
+        # )
     except Exception as e:
-        logger.error(f"command_start_replace - error was detected: {e}")
+        logger.error(f"get_position_info - error was detected: {e}")
         
 
 @router.callback_query(F.data != "back", StateFilter(FsmFillForm.category),)

@@ -19,11 +19,11 @@ class Interactor():
 
 
     def get_data_by_category(self, category: str):
-        response = requests.get(f"{self.url}/category_data/{category}")
+        response = requests.get(f"{self.url}/category_data/{category}") # to be refactored
         return response.json()
     
 
-    def get_description_by_position(self, pos: str):
+    def get_position_by_its_name(self, pos: str):
         response = requests.get(f"{self.url}/position/{pos}")
         return response.json()
 
@@ -32,3 +32,7 @@ class Interactor():
         response = requests.get(f"{self.url}/position_data/{pos}")
         return response.json()
 
+
+    def get_category_by_id(self, category: str):
+        response = requests.get(f"{self.url}/category_by_id/{category}") # to be refactored
+        return response.json()

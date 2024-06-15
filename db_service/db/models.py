@@ -5,6 +5,8 @@ from sqlalchemy import Enum as SqlEnum
 from sqlalchemy.orm import Mapped
 
 
+# ALL THE MODULE TO BE REFACTORED. AT THE SAME TYPE bot_service/test_router, bot_service/utils, router - TO BE REFACTORED, 
+
 class Categories(SQLModel, table=True):
     id: Optional[int] = Field(primary_key=True)
     name: str = Field(...)
@@ -29,3 +31,4 @@ class Links(SQLModel, table=True):
     img: Optional[str] = Field(default=None)
 
     position: Mapped[Positions] = Relationship(back_populates="links")
+
