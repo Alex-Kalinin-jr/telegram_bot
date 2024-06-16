@@ -33,7 +33,7 @@ services:
     volumes:
       - ./db_service:/app
     ports:
-      - 8000:8000 # to be hidden in prod
+      - 8000:8000
 
   postgres_service:
     image: postgres:16

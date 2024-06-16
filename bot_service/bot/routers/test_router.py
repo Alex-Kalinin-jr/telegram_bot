@@ -26,15 +26,15 @@ router.message.middleware(logging_middleware)
 router.callback_query.middleware(logging_middleware)
 
 names = get_language()
-# DESCRIPTION OF CATEGORY SHOULD BE PASSED AS MESSAGE TEXT WHEN GO INTO CERTAIN CATEGORY
 
 main_menu_markup = get_keyboard(kb_main_menu)
 only_back_menu_markup = get_keyboard(["back"])
 
-#scheduler should be attached. functions to be added for markups reloadings. then markups should be attached statically
+#this should be refactored. 
+# When new position is added - reply markup should be rebuilded. but at working time it should be static
 price_menu_markup = 2
 categories_menu_markup = 1
-
+#******
 
 class FsmFillForm(StatesGroup):
     category = State()
@@ -65,7 +65,7 @@ async def command_start(message: Message, state: FSMContext):
 
 
 @router.callback_query(F.data == "back",)
-async def answer_price(call: CallbackQuery, db_instance: BotDB, state: FSMContext):
+async def answer_price(call: CallbackQuery, state: FSMContext, db_service: Interactor,):
     state_str = await state.get_state()
     
     try:
@@ -73,11 +73,13 @@ async def answer_price(call: CallbackQuery, db_instance: BotDB, state: FSMContex
             await state.clear()
             await command_start_replace(call.message, state)
         elif state_str in [FsmFillForm.category_info, FsmFillForm.nomenclature]:
+            print("\n\ni was here")
             await state.set_state(FsmFillForm.category)
-            await answer_categories(call, db_instance, state)
+            await answer_categories(call, db_service, state)
+            print("\n\ni was here")
         elif state_str in [FsmFillForm.position_info]:
             await state.set_state(FsmFillForm.nomenclature)
-            await answer_nomenclature(call, db_instance, state)
+            await answer_nomenclature(call, db_service, state)
     except TelegramBadRequest as e:
         logger.error(f"command_start_replace - error was detected: {e}")
         
@@ -92,7 +94,7 @@ async def answer_contacts(call: CallbackQuery, state: FSMContext):
 
 
 @router.callback_query(F.data == "price_list", StateFilter(default_state),)
-async def answer_categories(call: CallbackQuery, db_instance: BotDB, state: FSMContext, db_service: Interactor):
+async def answer_categories(call: CallbackQuery, db_service: Interactor, state: FSMContext):
     try:
         response = db_service.get_categories()
         data_dict: dict = {i["name"]: i["name"] for i in response}
@@ -116,16 +118,14 @@ async def get_position_info(call: CallbackQuery, db_service: Interactor, bot: Bo
             if photo:
                 await call.message.answer_photo(photo)
 
-        keyboard_data = db_service.get_data_by_category(category) #this
-        data_dict: dict = {i["position"]: i["position"] for i in keyboard_data}
-        await call.message.answer(data_description, reply_markup=get_positions_kb(data_dict))
+        keyboard = call.message.reply_markup
 
+        await call.message.answer(data_description["description"], reply_markup=keyboard)
+        await bot.delete_message(
+            chat_id=call.message.chat.id,
+            message_id=call.message.message_id
+        )
 
-
-        # await bot.delete_message(
-        #     chat_id=call.message.chat.id,
-        #     message_id=call.message.message_id
-        # )
     except Exception as e:
         logger.error(f"get_position_info - error was detected: {e}")
         
