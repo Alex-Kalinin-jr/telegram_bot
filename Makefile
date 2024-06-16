@@ -7,7 +7,12 @@ down:
 rmbot:
 	- sudo docker stop telegram_bot_service
 	- sudo docker rm telegram_bot_service
-	- sudo docker rmi bltk_minibot_bot_service
+	- sudo docker rmi telegram_bot_bot_service
+
+rmdb:
+	- sudo docker stop db_service
+	- sudo docker rm db_service
+	- sudo docker rmi telegram_bot_db_service
 
 migratedb:
 	-sudo docker-compose exec db_service alembic revision \
@@ -20,3 +25,6 @@ filldb:
 	-sudo docker-compose exec db_service alembic upgrade head
 	-sudo docker-compose exec db_service python3 filling_data.py
 
+clean: rmbot rmdb
+
+upfill: up filldb
