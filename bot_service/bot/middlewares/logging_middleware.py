@@ -4,7 +4,7 @@ import time
 
 logger = logging.getLogger(__name__)
 formatter = logging.Formatter('%(levelname)s - %(message)s')
-handler = logging.FileHandler('functions_time.log')
+handler = logging.FileHandler('logs/functions_time.log')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 

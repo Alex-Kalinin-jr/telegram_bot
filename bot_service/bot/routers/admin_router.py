@@ -10,7 +10,6 @@ from middlewares.admin_middleware import AdmMiddleware
 from keyboards.keyboards import get_keyboard
 from data.button_name import kb_admin_main_menu
 from utils.utils import get_admin_messages
-from database.db import BotDB
 from middlewares.logging_middleware import handle_outer_middleware, logging_middleware
 
 
@@ -53,28 +52,6 @@ async def add_new_category(call: CallbackQuery, state: FSMContext):
     await call.message.edit_text(MESSAGES["add_category_1"], reply_markup=only_back_menu_markup)
 
 
-
-#here to be continued
-#here to be continued
-#here to be continued
-#here to be continued
-#here to be continued
-#here to be continued
-@r_admin.message(StateFilter(FsmAdmin.add_category),)
-async def check_and_write_category(db_instance: BotDB, state: FSMContext, message: Message):
-    categories = await db_instance.get_categories()
-    if message.text in categories:
-        await message.edit_text(MESSAGES['add_category_already_exist'], reply_markup=only_back_menu_markup)
-    else:
-        await message.edit_text(text="mock", reply_markup=only_back_menu_markup)
-
-
-
-
-# @r_admin.callback_query()
-# async def debug_function(call: CallbackQuery):
-#     print(call.model_dump_json(indent=4, exclude_none=True))
-
 #IN FUTURE
 # block user
 # unblock user
@@ -86,3 +63,19 @@ async def check_and_write_category(db_instance: BotDB, state: FSMContext, messag
 # delete category
 # add new category
 # add new position
+
+#here to be continued
+#here to be continued
+# @r_admin.message(StateFilter(FsmAdmin.add_category),)
+# async def check_and_write_category(state: FSMContext, message: Message):
+#     categories = await db_instance.get_categories()
+#     if message.text in categories:
+#         await message.edit_text(MESSAGES['add_category_already_exist'], reply_markup=only_back_menu_markup)
+#     else:
+#         await message.edit_text(text="mock", reply_markup=only_back_menu_markup)
+
+
+# @r_admin.callback_query()
+# async def debug_function(call: CallbackQuery):
+#     print(call.model_dump_json(indent=4, exclude_none=True))
+

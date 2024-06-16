@@ -1,7 +1,7 @@
 import ngrok
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI
 from config import BOT_TOKEN, NGROK_TOKEN
-from bot import bot, dp
+from bot import bot
 from routers.fastapi_router import router as fastapi_router
 
 

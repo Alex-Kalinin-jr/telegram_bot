@@ -13,8 +13,7 @@ from aiogram import flags
 from middlewares.logging_middleware import handle_outer_middleware, logging_middleware
 from keyboards.keyboards import get_keyboard, get_positions_kb
 from data.button_name import kb_main_menu
-from utils.utils import get_language
-from database.db import BotDB
+from utils.utils import get_language, get_admin_messages
 from services.db import Interactor
 
 
@@ -26,6 +25,7 @@ router.message.middleware(logging_middleware)
 router.callback_query.middleware(logging_middleware)
 
 names = get_language()
+messages = get_admin_messages()
 
 main_menu_markup = get_keyboard(kb_main_menu)
 only_back_menu_markup = get_keyboard(["back"])
@@ -48,7 +48,7 @@ class FsmFillForm(StatesGroup):
 async def command_start_replace(message: Message, state: FSMContext):
     try:
         await state.clear()
-        await message.edit_text(f'Hi {message.from_user.full_name}!', reply_markup=main_menu_markup)
+        await message.edit_text(f'Здравствуйте {message.from_user.full_name}!', reply_markup=main_menu_markup)
 
     except TelegramBadRequest as e:
         logger.error(f"command_start_replace - error was detected: {e}")
@@ -61,7 +61,7 @@ async def command_start(message: Message, state: FSMContext):
         await message.answer(f'Hi {message.from_user.full_name}!', reply_markup=main_menu_markup)
         return True
     except TelegramBadRequest as e:
-        logger.error(f"command_start_replace - error was detected: {e}")
+        logger.error(f"command_start - error was detected: {e}")
 
 
 @router.callback_query(F.data == "back",)
@@ -73,15 +73,13 @@ async def answer_price(call: CallbackQuery, state: FSMContext, db_service: Inter
             await state.clear()
             await command_start_replace(call.message, state)
         elif state_str in [FsmFillForm.category_info, FsmFillForm.nomenclature]:
-            print("\n\ni was here")
             await state.set_state(FsmFillForm.category)
             await answer_categories(call, db_service, state)
-            print("\n\ni was here")
         elif state_str in [FsmFillForm.position_info]:
             await state.set_state(FsmFillForm.nomenclature)
-            await answer_nomenclature(call, db_service, state)
+            await answer_positions(call, db_service, state)
     except TelegramBadRequest as e:
-        logger.error(f"command_start_replace - error was detected: {e}")
+        logger.error(f"answer_price - error was detected: {e}")
         
         
 @router.callback_query(F.data == "contacts", StateFilter(default_state),)
@@ -90,7 +88,7 @@ async def answer_contacts(call: CallbackQuery, state: FSMContext):
         await state.set_state(FsmFillForm.contacts)
         await call.message.edit_text(names['contacts'], reply_markup=only_back_menu_markup)
     except TelegramBadRequest as e:
-        logger.error(f"command_start_replace - error was detected: {e}")
+        logger.error(f"answer_contacts - error was detected: {e}")
 
 
 @router.callback_query(F.data == "price_list", StateFilter(default_state),)
@@ -101,7 +99,30 @@ async def answer_categories(call: CallbackQuery, db_service: Interactor, state: 
         await call.message.edit_text(names['categories'], reply_markup=get_positions_kb(data_dict))
         await state.set_state(FsmFillForm.category)
     except TelegramBadRequest as e:
-        logger.error(f"command_start_replace - error was detected: {e}")
+        logger.error(f"answer_categories - error was detected: {e}")
+
+
+@router.callback_query(F.data == "get_price", StateFilter(default_state),)
+async def get_price(call: CallbackQuery, bot: Bot):
+    try:
+        path = os.getcwd()
+        file_path = os.path.join(path, "documents/price.txt")
+        keyboard = call.message.reply_markup
+        try:
+            price = FSInputFile(file_path, filename="price-list")
+            await call.message.answer_document(price)
+
+
+            await call.message.answer(f'Здравствуйте {call.message.from_user.full_name}!', 
+                                      reply_markup=keyboard)
+            await bot.delete_message(
+                chat_id=call.message.chat.id,
+                message_id=call.message.message_id
+            )
+        except:
+            await call.message.edit_text(messages['no_price'], reply_markup=keyboard)
+    except TelegramBadRequest as e:
+        logger.error(f"get_price - error was detected: {e}")
 
 
 # see Models.py of db_service
@@ -113,7 +134,7 @@ async def get_position_info(call: CallbackQuery, db_service: Interactor, bot: Bo
         category = db_service.get_category_by_id(data_description["category_id"]) #this
         path = os.getcwd()
         for i in data:
-            file_path = os.path.join(path, "bot/images", i["img"])
+            file_path = os.path.join(path, "images", i["img"])
             photo = FSInputFile(file_path, filename="image")
             if photo:
                 await call.message.answer_photo(photo)
@@ -131,7 +152,7 @@ async def get_position_info(call: CallbackQuery, db_service: Interactor, bot: Bo
         
 
 @router.callback_query(F.data != "back", StateFilter(FsmFillForm.category),)
-async def answer_nomenclature(call: CallbackQuery, db_instance: BotDB, state: FSMContext, db_service: Interactor):
+async def answer_positions(call: CallbackQuery, db_service: Interactor, state: FSMContext,):
     data = db_service.get_description_by_category(call.data)
     nomenclature_data = db_service.get_data_by_category(data["name"])
     nomenclature_data_dict: dict = {i["position"]: i["position"] for i in nomenclature_data}
@@ -139,7 +160,7 @@ async def answer_nomenclature(call: CallbackQuery, db_instance: BotDB, state: FS
         await call.message.edit_text(data["description"], reply_markup=get_positions_kb(nomenclature_data_dict))
         await state.set_state(FsmFillForm.nomenclature)
     except TelegramBadRequest as e:
-        logger.error(f"command_start_replace - error was detected: {e}")
+        logger.error(f"answer_positions - error was detected: {e}")
 
 
 # @router.callback_query()
@@ -147,6 +168,10 @@ async def answer_nomenclature(call: CallbackQuery, db_instance: BotDB, state: FS
 #     print(call.model_dump_json(indent=4, exclude_none=True))
 
 
-# @router.message()
-# async def answer_default(message: Message):
-#     await message.answer(f"Hi {message.from_user.id}!")
+@router.message()
+async def answer_default(message: Message, bot: Bot):
+    await message.answer(f"Hi {message.from_user.id}!")
+    await bot.delete_message(
+        chat_id=message.chat.id,
+        message_id=message.message_id
+    )

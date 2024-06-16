@@ -2,7 +2,6 @@ from aiogram.types import ReplyKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from utils.utils import get_language
-from data.button_name import kb_main_menu
 from aiogram.filters.callback_data import CallbackData
 
 BUTTONS_DICT = get_language()
