@@ -2,7 +2,7 @@
 dict_names = {
     "ru" : {
         "main_menu": "Главное меню",
-        'contacts': "Контакты",
+        'contacts': "контакты",
         'price_list': "Прайс-лист",
         'back': "Назад",
         'categories': "Категории",
@@ -29,12 +29,16 @@ dict_messages = {
     "ru" : {
         "add_category_1" : "Напишите название категории",
         "add_category_already_exist" : "Такая категория уже существует",
-        "no_price" : "Извините, прайс на модерации"
+        "no_price" : "Извините, прайс на модерации",
+        "hello_msg" : "Здравствуйте",
+        "send_contacts" : "📞 <b>Наши номера:</b>\n89231262485\n\n🌐 <b>Наш сайт:\nhttps://bltk.pro</b>\n\n👥 <b>Наша группа вконтакте:</b>\nhttps://vk.com/bltk_shop"
     },
     "en" : {
         "add_category_1" : "Write category name",
         "add_category_already_exist" : "This category already exists",
-        "no_price" : "Sorry - price is on moderation"
+        "no_price" : "Sorry - price is on moderation",
+        "hello_msg" : "hello",
+        "send_contacts" : "our contacts"
     }
 }
 

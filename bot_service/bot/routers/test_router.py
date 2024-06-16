@@ -48,7 +48,8 @@ class FsmFillForm(StatesGroup):
 async def command_start_replace(message: Message, state: FSMContext):
     try:
         await state.clear()
-        await message.edit_text(f'Здравствуйте {message.from_user.full_name}!', reply_markup=main_menu_markup)
+        msg = messages["hello_msg"] + message.from_user.full_name
+        await message.edit_text(msg, reply_markup=main_menu_markup)
 
     except TelegramBadRequest as e:
         logger.error(f"command_start_replace - error was detected: {e}")
@@ -58,7 +59,8 @@ async def command_start_replace(message: Message, state: FSMContext):
 async def command_start(message: Message, state: FSMContext):
     try:
         await state.clear()
-        await message.answer(f'Hi {message.from_user.full_name}!', reply_markup=main_menu_markup)
+        msg = messages["hello_msg"] + message.from_user.full_name
+        await message.answer(msg, reply_markup=main_menu_markup)
         return True
     except TelegramBadRequest as e:
         logger.error(f"command_start - error was detected: {e}")
@@ -86,7 +88,7 @@ async def answer_price(call: CallbackQuery, state: FSMContext, db_service: Inter
 async def answer_contacts(call: CallbackQuery, state: FSMContext):
     try:
         await state.set_state(FsmFillForm.contacts)
-        await call.message.edit_text(names['contacts'], reply_markup=only_back_menu_markup)
+        await call.message.edit_text(messages['send_contacts'], reply_markup=only_back_menu_markup)
     except TelegramBadRequest as e:
         logger.error(f"answer_contacts - error was detected: {e}")
 
@@ -112,9 +114,8 @@ async def get_price(call: CallbackQuery, bot: Bot):
             price = FSInputFile(file_path, filename="price-list")
             await call.message.answer_document(price)
 
-
-            await call.message.answer(f'Здравствуйте {call.message.from_user.full_name}!', 
-                                      reply_markup=keyboard)
+            msg = messages["hello_msg"] + call.message.from_user.full_name
+            await call.message.answer(msg, reply_markup=keyboard)
             await bot.delete_message(
                 chat_id=call.message.chat.id,
                 message_id=call.message.message_id
@@ -131,7 +132,6 @@ async def get_position_info(call: CallbackQuery, db_service: Interactor, bot: Bo
     try:
         data_description = db_service.get_position_by_its_name(call.data) #this
         data = db_service.get_position_photos(call.data) #this
-        category = db_service.get_category_by_id(data_description["category_id"]) #this
         path = os.getcwd()
         for i in data:
             file_path = os.path.join(path, "images", i["img"])
@@ -141,6 +141,7 @@ async def get_position_info(call: CallbackQuery, db_service: Interactor, bot: Bo
 
         keyboard = call.message.reply_markup
 
+        print("\n\nand all right here")
         await call.message.answer(data_description["description"], reply_markup=keyboard)
         await bot.delete_message(
             chat_id=call.message.chat.id,
@@ -170,7 +171,6 @@ async def answer_positions(call: CallbackQuery, db_service: Interactor, state: F
 
 @router.message()
 async def answer_default(message: Message, bot: Bot):
-    await message.answer(f"Hi {message.from_user.id}!")
     await bot.delete_message(
         chat_id=message.chat.id,
         message_id=message.message_id
