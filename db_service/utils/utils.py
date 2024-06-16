@@ -10,7 +10,7 @@ async def init_db_by_data(session: AsyncSession):  # Pass session as argument
 
         related_positions = [x for x in positions if x["category"] == category_data["name"]]
         for pos_data in related_positions:
-            position = Positions(position=pos_data["name"], description=pos_data["description"], category=category)  # Assign category directly
+            position = Positions(position=pos_data["name"], description=pos_data["description"], category=category)
             session.add(position)
 
             for img in pos_data["img"]:

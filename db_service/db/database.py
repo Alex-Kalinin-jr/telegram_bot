@@ -11,7 +11,7 @@ from .models import *
 
 logger = logging.getLogger(__name__)
 formatter = logging.Formatter('%(levelname)s - %(message)s')
-handler = logging.FileHandler('db_log.log')
+handler = logging.FileHandler('logs/db_log.log')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
