@@ -6,9 +6,11 @@ from aiogram.types import Message, CallbackQuery
 from aiogram import Router, F, Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state, State, StatesGroup
-from aiogram.types import FSInputFile
+from aiogram.types import FSInputFile, InputMediaPhoto
 from aiogram.exceptions import TelegramBadRequest
 from aiogram import flags
+from aiogram.utils.media_group import MediaGroupBuilder
+
 
 from middlewares.logging_middleware import handle_outer_middleware, logging_middleware
 from keyboards.keyboards import get_keyboard, get_positions_kb
@@ -129,25 +131,17 @@ async def get_price(call: CallbackQuery, bot: Bot):
 # see Models.py of db_service
 @router.callback_query(StateFilter(FsmFillForm.nomenclature),)
 async def get_position_info(call: CallbackQuery, db_service: Interactor, bot: Bot):
+    keyboard = call.message.reply_markup
     try:
         data_description = db_service.get_position_by_its_name(call.data) #this
         data = db_service.get_position_photos(call.data) #this
-        path = os.getcwd()
-        await call.message.answer(text=call.data)
+        media_builder = MediaGroupBuilder(caption=data_description["description"])
         for i in data:
-            file_path = os.path.join(path, "images", i["img"])
-            photo = FSInputFile(file_path, filename="image")
-            if photo:
-                await call.message.answer_photo(photo)
-
-        keyboard = call.message.reply_markup
-
-        print("\n\nand all right here")
-        await call.message.answer(data_description["description"], reply_markup=keyboard)
-        await bot.delete_message(
-            chat_id=call.message.chat.id,
-            message_id=call.message.message_id
-        )
+            file_path = os.path.join(os.getcwd(), "images", i["img"])
+            media_builder.add(type="photo", media=FSInputFile(file_path, filename="image"))
+        await bot.send_media_group(call.message.chat.id, media=media_builder.build())
+        await call.message.answer(text=call.message.text, reply_markup=keyboard)
+        await bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
 
     except Exception as e:
         logger.error(f"get_position_info - error was detected: {e}")

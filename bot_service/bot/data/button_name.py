@@ -3,7 +3,7 @@ dict_names = {
     "ru" : {
         "main_menu": "Главное меню",
         'contacts': "контакты",
-        'price_list': "Прайс-лист",
+        'price_list': "Наши товары",
         'back': "Назад",
         'categories': "Категории",
         'get_infro': "Подробнее",
