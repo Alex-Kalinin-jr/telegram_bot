@@ -11,7 +11,6 @@ from aiogram.exceptions import TelegramBadRequest
 from aiogram import flags
 from aiogram.utils.media_group import MediaGroupBuilder
 
-
 from middlewares.logging_middleware import handle_outer_middleware, logging_middleware
 from keyboards.keyboards import get_keyboard, get_positions_kb
 from data.button_name import kb_main_menu
@@ -140,7 +139,7 @@ async def get_position_info(call: CallbackQuery, db_service: Interactor, bot: Bo
             file_path = os.path.join(os.getcwd(), "images", i["img"])
             media_builder.add(type="photo", media=FSInputFile(file_path, filename="image"))
         await bot.send_media_group(call.message.chat.id, media=media_builder.build())
-        await call.message.answer(text=call.message.text, reply_markup=keyboard)
+        await call.message.answer(text=messages["choose"], reply_markup=keyboard)
         await bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
 
     except Exception as e:

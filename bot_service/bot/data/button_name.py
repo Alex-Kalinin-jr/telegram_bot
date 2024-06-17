@@ -21,7 +21,8 @@ dict_names = {
         'get_infro': "Get info",
         'add_position': "Add position",
         'add_category': "Add category",
-        'get_price' : "Get full price"
+        'get_price' : "Get full price",
+        'choose' : 'выберите интересующую позицию'
     } 
 }
 
@@ -38,7 +39,8 @@ dict_messages = {
         "add_category_already_exist" : "This category already exists",
         "no_price" : "Sorry - price is on moderation",
         "hello_msg" : "hello",
-        "send_contacts" : "our contacts"
+        "send_contacts" : "our contacts",
+        "choose" : "choose position"
     }
 }
 
