@@ -48,7 +48,7 @@ class FsmFillForm(StatesGroup):
 async def command_start_replace(message: Message, state: FSMContext):
     try:
         await state.clear()
-        msg = messages["hello_msg"] + message.from_user.full_name
+        msg = messages["hello_msg"] + ", " + message.from_user.full_name
         await message.edit_text(msg, reply_markup=main_menu_markup)
 
     except TelegramBadRequest as e:
@@ -59,7 +59,7 @@ async def command_start_replace(message: Message, state: FSMContext):
 async def command_start(message: Message, state: FSMContext):
     try:
         await state.clear()
-        msg = messages["hello_msg"] + message.from_user.full_name
+        msg = messages["hello_msg"] + ", " + message.from_user.full_name
         await message.answer(msg, reply_markup=main_menu_markup)
         return True
     except TelegramBadRequest as e:
@@ -114,7 +114,7 @@ async def get_price(call: CallbackQuery, bot: Bot):
             price = FSInputFile(file_path, filename="price-list")
             await call.message.answer_document(price)
 
-            msg = messages["hello_msg"] + call.message.from_user.full_name
+            msg = messages["hello_msg"] + ", " + call.message.from_user.full_name
             await call.message.answer(msg, reply_markup=keyboard)
             await bot.delete_message(
                 chat_id=call.message.chat.id,
@@ -133,6 +133,7 @@ async def get_position_info(call: CallbackQuery, db_service: Interactor, bot: Bo
         data_description = db_service.get_position_by_its_name(call.data) #this
         data = db_service.get_position_photos(call.data) #this
         path = os.getcwd()
+        await call.message.answer(text=call.data)
         for i in data:
             file_path = os.path.join(path, "images", i["img"])
             photo = FSInputFile(file_path, filename="image")
