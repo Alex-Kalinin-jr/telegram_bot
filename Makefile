@@ -28,3 +28,9 @@ filldb:
 clean: rmbot rmdb
 
 upfill: up filldb
+
+dump_postgres:
+	docker exec -i postgres_service /bin/bash -c "PGPASSWORD=postgres pg_dump --username postgres postgres" > ./postgres_service/dump.sql
+
+restore_postgres:
+	docker exec -i postgres_service /bin/bash -c "PGPASSWORD=postgres psql --username postgres postgres" < ./postgres_service/dump.sql

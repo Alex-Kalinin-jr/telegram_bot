@@ -1,4 +1,6 @@
 import asyncio
+import argparse
+
 from utils.utils import init_db_by_data
 from db.database import async_session
 

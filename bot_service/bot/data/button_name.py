@@ -9,8 +9,7 @@ dict_names = {
         'get_infro': "Подробнее",
         'add_position': "Добавить позицию",
         'add_category': "Добавить категорию",
-        'get_price' : "Получить прайс"
-        
+        'get_price' : "Получить прайс",   
     },
     "en" : {
         "main_menu": "Main menu",
@@ -22,7 +21,6 @@ dict_names = {
         'add_position': "Add position",
         'add_category': "Add category",
         'get_price' : "Get full price",
-        'choose' : 'выберите интересующую позицию'
     } 
 }
 
@@ -32,7 +30,8 @@ dict_messages = {
         "add_category_already_exist" : "Такая категория уже существует",
         "no_price" : "Извините, прайс на модерации",
         "hello_msg" : "Здравствуйте",
-        "send_contacts" : "📞 <b>Наши номера:</b>\n89231262485\n\n🌐 <b>Наш сайт:\nhttps://bltk.pro</b>\n\n👥 <b>Наша группа вконтакте:</b>\nhttps://vk.com/bltk_shop"
+        "send_contacts" : "📞 <b>Наши номера:</b>\n89231262485\n\n🌐 <b>Наш сайт:\nhttps://bltk.pro</b>\n\n👥 <b>Наша группа вконтакте:</b>\nhttps://vk.com/bltk_shop",
+        'choose' : 'выберите интересующую позицию'
     },
     "en" : {
         "add_category_1" : "Write category name",
@@ -48,3 +47,5 @@ dict_messages = {
 
 kb_main_menu = [ "contacts", "price_list", "get_price"]
 kb_admin_main_menu = ["add_category", "back", ]
+
+prices = [("pogonaj.pdf", "прайс_погонаж.pdf"), ("shiti.pdf", "прайс_щиты.pdf")]

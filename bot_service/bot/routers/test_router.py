@@ -6,14 +6,14 @@ from aiogram.types import Message, CallbackQuery
 from aiogram import Router, F, Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state, State, StatesGroup
-from aiogram.types import FSInputFile, InputMediaPhoto
+from aiogram.types import FSInputFile
 from aiogram.exceptions import TelegramBadRequest
 from aiogram import flags
 from aiogram.utils.media_group import MediaGroupBuilder
 
 from middlewares.logging_middleware import handle_outer_middleware, logging_middleware
 from keyboards.keyboards import get_keyboard, get_positions_kb
-from data.button_name import kb_main_menu
+from data.button_name import kb_main_menu, prices
 from utils.utils import get_language, get_admin_messages
 from services.db import Interactor
 
@@ -107,23 +107,19 @@ async def answer_categories(call: CallbackQuery, db_service: Interactor, state: 
 
 @router.callback_query(F.data == "get_price", StateFilter(default_state),)
 async def get_price(call: CallbackQuery, bot: Bot):
+    keyboard = call.message.reply_markup
     try:
-        path = os.getcwd()
-        file_path = os.path.join(path, "documents/price.txt")
-        keyboard = call.message.reply_markup
-        try:
-            price = FSInputFile(file_path, filename="price-list")
-            await call.message.answer_document(price)
+        media_builder = MediaGroupBuilder(caption="ab")
+        for doc in prices:
+            file_path = os.path.join(os.getcwd(), "documents", doc[0])
+            media_builder.add(type="document", media=FSInputFile(file_path, filename=doc[1]))
+        await bot.send_media_group(call.message.chat.id, media=media_builder.build())
 
-            msg = messages["hello_msg"] + ", " + call.message.from_user.full_name
-            await call.message.answer(msg, reply_markup=keyboard)
-            await bot.delete_message(
-                chat_id=call.message.chat.id,
-                message_id=call.message.message_id
-            )
-        except:
-            await call.message.edit_text(messages['no_price'], reply_markup=keyboard)
-    except TelegramBadRequest as e:
+        msg = messages["hello_msg"] + ", " + call.message.from_user.full_name
+        await call.message.answer(msg, reply_markup=keyboard)
+        await bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
+    except Exception as e:
+        await call.message.answer(messages['no_price'], reply_markup=keyboard)
         logger.error(f"get_price - error was detected: {e}")
 
 
