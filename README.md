@@ -1,26 +1,29 @@
-### TEMPLATE FOR TELEGRAM BOT.
+## TEMPLATE FOR TELEGRAM BOT.
 
-#### System explanation
-
-This application is microservice-architecture app, which is intended to show the data from database to user. It consist of: ***postgres_service*** with the database, ***db_service*** with the database wrapper and API, ***telegram_bot_service*** with the bot logic and API. For db convenience the ***adminer*** is included from db-side, the SQLModel + Alembic are included as ORM mapping. API is implemented via FastAPI. You can look at working version on:
-
-[Working version of bot is HERE](https://web.telegram.org/a/#6998070759)
-
-There are 2 branches: 
-
-
+App for representing database data and interacting with it via telegram bot.
 
 - The bot is written on aiogram 3.7.
 - It uses webhooks+FastApi for load decreasing
-- It uses postgres as database.
+- It has ORM (SQLModel + Alembic)
+- All interactions are asynchronous
 
-#### Working version of bot:
+#### System explanation
 
+There are 2 versions of application:
+1) branch **initial_template**. Template for investigation of bot structure. This is lightweighted version without docker. Database is realized via ***SQlite***. Bot internal storage is **MemoryStorage**.
+All necessary **ENVIRONMENTS** are in **settings.ini** file
 
-If you want to deploy the bot on remote server, there are some helping files for that. **You can adjust them for your needs**:
-- **Makefile** with ```make run``` to launch the script in background
-- **launch.sh** with check script and relaunching instructions. Do not forget to add execute rights to script. Schedule execution. Example: you can adjust cron: Write ```crontab -e``` and insert the line ```0 * * * * /path/to/script/launch.sh >> /path/to/log/cron_log.log 2>&1```
+2) branch **main**. Microservice-architecture app, which is intended to show the data from database to user. It consist of: ***postgres_service*** with the database, ***db_service*** with the database wrapper and API, ***telegram_bot_service*** with the bot logic and API. For db convenience the ***adminer*** is included from db-side, the ***SQLModel + Alembic*** are included as ORM mapping. API is implemented via FastAPI. Bot's memory storage is ***redis***
+You can look at working version on:
 
+[Working version of bot is HERE](https://web.telegram.org/a/#6998070759)
 
+Ok, to deploy this version:
+ - Open ```docker-compose.yaml``` file and find locations of all .env files. Fill these files with apporpriate data. (For your convenience the .env.example is presented in each related place)
+ - Hardcode your **ORM** in ```models.py```
+ - Open ```db_service/alembic.ini``` and fill **line 62** by apporpriate data (**ALL APP USES ASYNCPG+POSTGRES AS ENGINE, YOU SHOULD USE AND SPECIFY EXACTLY IT**)
+ - Launch ```make up```. This will set up containers. At this moment you have working app but empty database. So, let's fill it:
+ launch ```make migratedb```.
+ - Open adminer on ```localhost:8080```. You should see existing database with your tables. Fill themm by apporpriate data. Make database backup by ```make dump_postgres```. This will create sql filling script in **postgres_service** directory.
+ - If you by any reason rebuild containers, just do ```make restore_postgres``` and enjoy.
 
-***If you want dockerized version, switch to ```develop_docker``` branch (now in progress)***
