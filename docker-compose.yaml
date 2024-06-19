@@ -1,0 +1,77 @@
+version: '3.4'
+services:
+  bot_service:
+    build: ./bot_service
+    container_name: telegram_bot_service
+    restart: on-failure
+    env_file:
+      - ./bot_service/.env
+    command: bash -c "make"
+    volumes:
+      - ./bot_service:/app
+    ports:
+      - 8001:8000
+      - 443:443
+
+  redis_service:
+    image: redis:6
+    container_name: redis_service
+    command: redis-server --appendonly yes
+    volumes:
+      - ./redis_service:/data
+    restart: on-failure
+    ports:
+      - 6379:6379
+
+  db_service:
+    build: ./db_service
+    container_name: db_service
+    restart: on-failure
+    env_file:
+      - .env
+    command: bash -c "make"
+    volumes:
+      - ./db_service:/app
+    ports:
+      - 8000:8000
+
+  postgres_service:
+    image: postgres:16
+    container_name: postgres_service
+    env_file: 
+      - .env
+    command:
+      - "postgres"
+      - "-c"
+      - "max_connections=50"
+      - "-c"
+      - "work_mem=16MB"
+      - "-c"
+      - "effective_cache_size=512MB"
+      - "-c"
+      - "random_page_cost=1.1"
+      - "-c"
+      - "temp_file_limit=512MB"
+      - "-c"
+      - "lock_timeout=1s"
+      - "-c"
+      - "statement_timeout=30s"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    ports:
+      - 5432:5432
+
+  adminer:
+    image: adminer
+    container_name: adminer_service
+    restart: always
+    ports:
+      - 8080:8080
+
+volumes:
+  pg-data:
