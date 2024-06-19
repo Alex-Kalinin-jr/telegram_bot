@@ -103,8 +103,8 @@ async def answer_categories(call: CallbackQuery, db_service: Interactor, state: 
         await state.set_state(FsmFillForm.category)
     except TelegramBadRequest as e:
         logger.error(f"answer_categories - error was detected: {e}")
-#parket - 10
-#docka - 11
+
+
 @router.callback_query(F.data == "get_price", StateFilter(default_state),)
 async def get_price(call: CallbackQuery, bot: Bot):
     keyboard = call.message.reply_markup

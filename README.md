@@ -1,10 +1,21 @@
-### TEMPLATE FOR TELEGRAM BOT SHOWING CATEGORIES AND POSITIONS OF ANYTHING PRESENTED IN DB.
+### TEMPLATE FOR TELEGRAM BOT.
+
+#### System explanation
+
+This application is microservice-architecture app, which is intended to show the data from database to user. It consist of: ***postgres_service*** with the database, ***db_service*** with the database wrapper and API, ***telegram_bot_service*** with the bot logic and API. For db convenience the ***adminer*** is included from db-side, the SQLModel + Alembic are included as ORM mapping. API is implemented via FastAPI. You can look at working version on:
+
+<p style="text-align: center"><a href=https://web.telegram.org/a/#6998070759></a></p>
+
+There are 2 branches: 
+
+
 
 - The bot is written on aiogram 3.7.
-- It uses webhooks+FastApi for load descending
-- Asyncsqlite is used for simplification, but architecture allows to replace with Postgres or something else in large projects, or event to pack the parts into containers.
+- It uses webhooks+FastApi for load decreasing
+- It uses postgres as database.
 
-Investigate **settings.ini.example**, make **settings.ini**, fill the database(example is in **database/db.py**) run **main.py** and enjoy.
+#### Working version of bot:
+
 
 If you want to deploy the bot on remote server, there are some helping files for that. **You can adjust them for your needs**:
 - **Makefile** with ```make run``` to launch the script in background
