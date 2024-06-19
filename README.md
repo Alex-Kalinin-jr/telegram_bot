@@ -2,6 +2,8 @@
 
 App for representing database data and interacting with it via telegram bot.
 
+[Working version of bot is HERE](https://web.telegram.org/a/#6998070759)
+
 - The bot is written on aiogram 3.7.
 - It uses webhooks+FastApi for load decreasing
 - It has ORM (SQLModel + Alembic)
@@ -15,8 +17,6 @@ All necessary **ENVIRONMENTS** are in **settings.ini** file
 
 2) branch **main**. Microservice-architecture app, which is intended to show the data from database to user. It consist of: ***postgres_service*** with the database, ***db_service*** with the database wrapper and API, ***telegram_bot_service*** with the bot logic and API. For db convenience the ***adminer*** is included from db-side, the ***SQLModel + Alembic*** are included as ORM mapping. API is implemented via FastAPI. Bot's memory storage is ***redis***
 You can look at working version on:
-
-[Working version of bot is HERE](https://web.telegram.org/a/#6998070759)
 
 Ok, to deploy this version:
  - Open ```docker-compose.yaml``` file and find locations of all .env files. Fill these files with apporpriate data. (For your convenience the .env.example is presented in each related place)
